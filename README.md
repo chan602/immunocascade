@@ -1,4 +1,5 @@
-Immunology Learning Game — Overview
+Immunology Learning Game
+
 This project is an interactive learning tool designed to teach core immunology concepts through visual storytelling and hands-on problem solving. It combines narrative-driven scenarios with sandbox-style mechanics to help users understand how the immune system responds to different challenges.
 
 Core Experience
