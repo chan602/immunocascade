@@ -149,6 +149,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 #cv-feedback{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid var(--amber);border-radius:20px;padding:5px 16px;font-family:var(--font-mono);font-size:11px;color:var(--amber3);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:10;max-width:85%;}
 #cv-feedback.show{opacity:1;}
 #cv-drag-ghost{position:absolute;pointer-events:none;z-index:50;display:none;opacity:.85;}
+
+#ai-panel{
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  padding:12px 18px;
+  min-height:64px;
+  flex-shrink:0;
+  font-size:12px;
+}
+#ai-panel-inner{display:flex;align-items:flex-start;gap:10px;}
+#ai-empty{color:var(--muted);font-family:var(--font-mono);font-size:10px;line-height:1.6;}
+#ai-loading{display:flex;align-items:center;gap:10px;color:var(--amber3);font-family:var(--font-mono);font-size:11px;}
+.ai-spinner{width:14px;height:14px;border:2px solid rgba(217,119,6,.3);border-top-color:var(--amber);border-radius:50%;animation:spinSlow .7s linear infinite;flex-shrink:0;}
+#ai-accuracy{font-family:var(--font-mono);font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:var(--bg3);color:var(--amber3);border:1px solid var(--border);margin-bottom:6px;display:inline-block;}
+#ai-text{font-size:11.5px;color:var(--amber3);line-height:1.7;white-space:pre-wrap;}
 </style>
 </head>
 <body>
@@ -311,10 +326,22 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
       <div id="canvas-bar">
         <div class="cv-stat">Nodes: <span id="cv-node-count">0</span></div>
         <div class="cv-stat">Links: <span id="cv-link-count">0</span></div>
-        
         <div style="flex:1"></div>
         <button class="cv-btn" onclick="cvReset()">Reset</button>
-        <button class="cv-btn primary" onclick="cvEvaluate()">Evaluate ↗</button>
+        <button class="cv-btn primary" id="eval-btn" onclick="cvEvaluate()">Evaluate ↗</button>
+      </div>
+      <div id="ai-panel">
+        <div id="ai-panel-inner">
+          <div id="ai-loading" style="display:none">
+            <div class="ai-spinner"></div>
+            <span>Analysing your pathway...</span>
+          </div>
+          <div id="ai-result" style="display:none">
+            <div id="ai-accuracy"></div>
+            <div id="ai-text"></div>
+          </div>
+          <div id="ai-empty">Build your pathway then hit <strong>Evaluate</strong> to get AI feedback on your immunology.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -396,80 +423,31 @@ function drawMemory(g,cx,cy,s){
   const l=e('text',{x:cx,y:cy,fill:'#ECFDF5','text-anchor':'middle','dominant-baseline':'central','font-size':s*.2,'font-weight':'700','font-family':'sans-serif'});l.textContent='M';g.appendChild(l);
 }
 function drawAntibody(g,cx,cy,s){
-  // Scale-relative block dimensions
-  const bw=s*.28, bh=s*.18, gap=s*.03, armAng=38*Math.PI/180;
-  // Colors matching reference
-  const HC='#9333EA', HV='#A855F7', LC='#0D9488', LV='#14B8A6';
-  const hs=HC, hb='#6B21A8';
-
-  // ── FC STEM (centered, vertical) ──
-  // CH3
-  g.appendChild(e('rect',{x:cx-bw/2,y:cy+s*.18,width:bw,height:bh,rx:4,fill:HC,stroke:hb,'stroke-width':'1.2'}));
-  const ch3=e('text',{x:cx,y:cy+s*.18+bh/2,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.12,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
-  ch3.textContent='CH3'; g.appendChild(ch3);
-  // CH2
-  g.appendChild(e('rect',{x:cx-bw/2,y:cy+s*.18-bh-gap,width:bw,height:bh,rx:4,fill:HC,stroke:hb,'stroke-width':'1.2'}));
-  const ch2=e('text',{x:cx,y:cy+s*.18-bh/2-gap,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.12,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
-  ch2.textContent='CH2'; g.appendChild(ch2);
-  // hinge
-  const hingeY=cy+s*.18-bh*2-gap*2;
-  g.appendChild(e('rect',{x:cx-bw*.35,y:hingeY,width:bw*.7,height:bh*.55,rx:4,fill:'#6B21A8',stroke:'#4C1D95','stroke-width':'1'}));
-  const ht=e('text',{x:cx,y:hingeY+bh*.27,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.1,fill:'#EDE9FE','font-family':'sans-serif'});
-  ht.textContent='hinge'; g.appendChild(ht);
-
-  // fork lines hinge → arms
-  const forkY=hingeY;
-  const leftPivotX=cx-bw*.25, rightPivotX=cx+bw*.25;
-  g.appendChild(e('line',{x1:leftPivotX,y1:forkY,x2:cx-s*.32,y2:forkY-s*.28,stroke:hb,'stroke-width':'1.5','stroke-linecap':'round'}));
-  g.appendChild(e('line',{x1:rightPivotX,y1:forkY,x2:cx+s*.32,y2:forkY-s*.28,stroke:hb,'stroke-width':'1.5','stroke-linecap':'round'}));
-
-  // ── LEFT FAB ARM (rotate -38deg from left pivot) ──
-  // Left arm: heavy inner (CH1, VH), light outer (CL, VL)
-  // Use rotated group from arm root
-  const lrx=cx-s*.32, lry=forkY-s*.28;
-  const lg=e('g',{transform:`translate(${lrx},${lry}) rotate(-38)`});
-  // CH1 inner
-  lg.appendChild(e('rect',{x:gap/2,y:-bh-gap,width:bw*.55,height:bh,rx:4,fill:HC,stroke:hb,'stroke-width':'1.2'}));
-  const lch1=e('text',{x:gap/2+bw*.275,y:-bh/2-gap,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
-  lch1.textContent='CH1'; lg.appendChild(lch1);
-  // VH inner
-  lg.appendChild(e('rect',{x:gap/2,y:-bh*2-gap*2,width:bw*.55,height:bh,rx:4,fill:HV,stroke:'#7E22CE','stroke-width':'1.2'}));
-  const lvh=e('text',{x:gap/2+bw*.275,y:-bh*1.5-gap*2,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
-  lvh.textContent='VH'; lg.appendChild(lvh);
-  // CL outer
-  lg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh-gap,width:bw*.55,height:bh,rx:4,fill:LC,stroke:'#0F766E','stroke-width':'1.2'}));
-  const lcl=e('text',{x:-bw*.275-gap/2,y:-bh/2-gap,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
-  lcl.textContent='CL'; lg.appendChild(lcl);
-  // VL outer
-  lg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh*2-gap*2,width:bw*.55,height:bh,rx:4,fill:LV,stroke:'#0F766E','stroke-width':'1.2'}));
-  const lvl=e('text',{x:-bw*.275-gap/2,y:-bh*1.5-gap*2,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
-  lvl.textContent='VL'; lg.appendChild(lvl);
-  // CDR dashed box at tip
-  lg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh*2-gap*2-s*.04,width:bw*1.1+gap,height:bh*2+gap*2+s*.04,rx:5,fill:'none',stroke:'#E11D48','stroke-width':'1.2','stroke-dasharray':'4 2',opacity:'.8'}));
-  g.appendChild(lg);
-
-  // ── RIGHT FAB ARM (rotate +38deg from right pivot) ──
-  const rrx=cx+s*.32, rry=forkY-s*.28;
-  const rg=e('g',{transform:`translate(${rrx},${rry}) rotate(38)`});
-  // CH1 inner (left of center in rotated space = toward stem)
-  rg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh-gap,width:bw*.55,height:bh,rx:4,fill:HC,stroke:hb,'stroke-width':'1.2'}));
-  const rch1=e('text',{x:-bw*.275-gap/2,y:-bh/2-gap,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
-  rch1.textContent='CH1'; rg.appendChild(rch1);
-  // VH inner
-  rg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh*2-gap*2,width:bw*.55,height:bh,rx:4,fill:HV,stroke:'#7E22CE','stroke-width':'1.2'}));
-  const rvh=e('text',{x:-bw*.275-gap/2,y:-bh*1.5-gap*2,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
-  rvh.textContent='VH'; rg.appendChild(rvh);
-  // CL outer
-  rg.appendChild(e('rect',{x:gap/2,y:-bh-gap,width:bw*.55,height:bh,rx:4,fill:LC,stroke:'#0F766E','stroke-width':'1.2'}));
-  const rcl=e('text',{x:gap/2+bw*.275,y:-bh/2-gap,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
-  rcl.textContent='CL'; rg.appendChild(rcl);
-  // VL outer
-  rg.appendChild(e('rect',{x:gap/2,y:-bh*2-gap*2,width:bw*.55,height:bh,rx:4,fill:LV,stroke:'#0F766E','stroke-width':'1.2'}));
-  const rvl=e('text',{x:gap/2+bw*.275,y:-bh*1.5-gap*2,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
-  rvl.textContent='VL'; rg.appendChild(rvl);
-  // CDR dashed box
-  rg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh*2-gap*2-s*.04,width:bw*1.1+gap,height:bh*2+gap*2+s*.04,rx:5,fill:'none',stroke:'#E11D48','stroke-width':'1.2','stroke-dasharray':'4 2',opacity:'.8'}));
-  g.appendChild(rg);
+  // 6-pill Y design. s≈24 for tray, s≈32 for scene placement
+  const pw=s*.55, ph=s*2.2, lph=s*1.75, tipH=s*.85;
+  const gap=s*.08;
+  // Fc stem: two side-by-side pills centered on cx, bottom at cy+ph
+  const fcLx=cx-pw/2-gap/2, fcRx=cx+gap/2, fcY=cy-s*.2;
+  g.appendChild(e('rect',{x:fcLx,y:fcY,width:pw,height:ph,rx:pw/2,fill:'#F472B6',stroke:'#DB2777','stroke-width':'1.2'}));
+  g.appendChild(e('rect',{x:fcRx,y:fcY,width:pw,height:ph,rx:pw/2,fill:'#F472B6',stroke:'#DB2777','stroke-width':'1.2'}));
+  // Left arm pivot at top of left Fc pill
+  const lax=fcLx+pw/2, lay=fcY;
+  const la=e('g',{transform:`translate(${lax},${lay}) rotate(-50)`});
+  la.appendChild(e('rect',{x:gap/2,y:-ph,width:pw,height:ph,rx:pw/2,fill:'#F472B6',stroke:'#DB2777','stroke-width':'1.2'}));
+  la.appendChild(e('rect',{x:gap/2,y:-ph,width:pw,height:tipH,rx:pw/2,fill:'#BE185D',stroke:'#9D174D','stroke-width':'1.2'}));
+  la.appendChild(e('rect',{x:-pw-gap/2,y:-lph,width:pw,height:lph,rx:pw/2,fill:'#9333EA',stroke:'#7E22CE','stroke-width':'1.2'}));
+  la.appendChild(e('rect',{x:-pw-gap/2,y:-lph,width:pw,height:tipH,rx:pw/2,fill:'#6B21A8',stroke:'#581C87','stroke-width':'1.2'}));
+  g.appendChild(la);
+  // Right arm pivot at top of right Fc pill
+  const rax=fcRx+pw/2, ray=fcY;
+  const ra=e('g',{transform:`translate(${rax},${ray}) rotate(50)`});
+  ra.appendChild(e('rect',{x:-pw-gap/2,y:-ph,width:pw,height:ph,rx:pw/2,fill:'#F472B6',stroke:'#DB2777','stroke-width':'1.2'}));
+  ra.appendChild(e('rect',{x:-pw-gap/2,y:-ph,width:pw,height:tipH,rx:pw/2,fill:'#BE185D',stroke:'#9D174D','stroke-width':'1.2'}));
+  ra.appendChild(e('rect',{x:gap/2,y:-lph,width:pw,height:lph,rx:pw/2,fill:'#9333EA',stroke:'#7E22CE','stroke-width':'1.2'}));
+  ra.appendChild(e('rect',{x:gap/2,y:-lph,width:pw,height:tipH,rx:pw/2,fill:'#6B21A8',stroke:'#581C87','stroke-width':'1.2'}));
+  g.appendChild(ra);
+  // dummy to satisfy old signature end
+  void 0;
 }
 
 const CELL_DEFS={
@@ -915,24 +893,83 @@ function cvReset(){
   cvPlaced={}; cvLinks=[]; cvNextZ=1;
   document.getElementById('cv-drag-line').innerHTML='';
   document.getElementById('canvas-hint').style.display='';
-  document.getElementById('cv-node-count').textContent='0';
-  document.getElementById('cv-link-count').textContent='0';
+  document.getElementById('ai-empty').style.display='';
+  document.getElementById('ai-result').style.display='none';
+  document.getElementById('ai-loading').style.display='none';
+  document.getElementById('canvas-hint').style.display='';
   CV_NODES_DEF.forEach(nd=>document.getElementById('cvchip-'+nd.id)?.classList.remove('placed'));
   cvRender();
 }
 
-function cvEvaluate(){
-  const placed=Object.keys(cvPlaced);
-  const coreRequired=['influenza','tlr7','ifn','macrophage','dendritic','cd4','cd8','clearance'];
-  const missing=coreRequired.filter(id=>!placed.includes(id));
+async function cvEvaluate(){
+  const placedIds=Object.keys(cvPlaced);
+  if(placedIds.length===0){cvShowFb('Add some nodes first','#D97706');return;}
+
   const correctLinks=cvLinks.filter(l=>CV_VALID.has(`${l.from}->${l.to}`)||CV_VALID.has(`${l.to}->${l.from}`)).length;
   const wrongLinks=cvLinks.length-correctLinks;
   const pct=cvLinks.length===0?0:Math.round((correctLinks/cvLinks.length)*100);
-  let msg='';
-  if(pct>=80&&missing.length===0)msg=`Complete pathway — ${correctLinks} correct connections, ${wrongLinks} to review.`;
-  else if(pct>=60)msg=`${correctLinks} correct links, ${wrongLinks} incorrect. Missing: ${missing.join(', ')||'none'}.`;
-  else msg=`Start with Influenza → TLR7 → NF-κB / IFN. ${missing.length} key nodes missing.`;
-  cvShowFb(`${pct}% accuracy — ${msg}`, pct>=80&&missing.length===0?'#10B981':pct>=60?'#F59E0B':'#EF4444');
+
+  const nodeList=placedIds.join(', ');
+  const linkList=cvLinks.map(l=>`${l.from} → ${l.to} (${CV_VALID.has(`${l.from}->${l.to}`)||CV_VALID.has(`${l.to}->${l.from}`)?'correct':'incorrect'})`).join('\n');
+  const coreRequired=['influenza','tlr7','ifn','macrophage','dendritic','cd4','cd8','clearance'];
+  const missing=coreRequired.filter(id=>!placedIds.includes(id));
+
+  const prompt=`You are an immunology educator evaluating a student's attempt to map the influenza immune response cascade.
+
+The student placed these nodes: ${nodeList}
+Their connections:
+${linkList||'(none)'}
+Missing core nodes: ${missing.join(', ')||'none'}
+Connection accuracy: ${pct}% (${correctLinks} correct, ${wrongLinks} incorrect)
+
+Give concise feedback in 3 short paragraphs:
+1. What they got right (be specific about the biology)
+2. What is missing or incorrect and why it matters mechanistically
+3. One key concept to focus on next
+
+Be direct, use proper immunology terminology, keep each paragraph to 2-3 sentences. Do not use markdown headers or bullet points.`;
+
+  const panel=document.getElementById('ai-panel-inner');
+  const loading=document.getElementById('ai-loading');
+  const result=document.getElementById('ai-result');
+  const empty=document.getElementById('ai-empty');
+  const accEl=document.getElementById('ai-accuracy');
+  const textEl=document.getElementById('ai-text');
+  const btn=document.getElementById('eval-btn');
+
+  empty.style.display='none';
+  result.style.display='none';
+  loading.style.display='flex';
+  btn.disabled=true; btn.textContent='Evaluating...';
+
+  try{
+    const res=await fetch('https://anthropic-proxy.emailtonathan.workers.dev',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'X-Secret':'immunocascade-2025',
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:400,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'Unable to get feedback. Please try again.';
+    loading.style.display='none';
+    accEl.textContent=`${pct}% accuracy — ${correctLinks} correct, ${wrongLinks} incorrect`;
+    accEl.style.color=pct>=80?'#10B981':pct>=50?'#F59E0B':'#EF4444';
+    textEl.textContent=text;
+    result.style.display='block';
+  }catch(err){
+    loading.style.display='none';
+    textEl.textContent='Could not reach AI feedback service. Check your connection and try again.';
+    accEl.textContent=`${pct}% accuracy`;
+    result.style.display='block';
+  }finally{
+    btn.disabled=false; btn.textContent='Evaluate ↗';
+  }
 }
 
 let cvFbTimer=null;
