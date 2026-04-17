@@ -10,9 +10,7 @@ Story Mode: A guided, panel-based experience where players follow immune respons
 
 Canvas Mode: A more open, interactive environment where players build immune responses themselves using cell types and signaling interactions. A scoring and feedback system evaluates accuracy and provides guidance.
 
-What It Teaches
-
-The game focuses on connecting big-picture immune responses with underlying molecular mechanisms:
+What It Teaches: The game focuses on connecting big-picture immune responses with underlying molecular mechanisms:
 
 Macro level — tissues and organs (e.g., lymph nodes, infection sites)
 
