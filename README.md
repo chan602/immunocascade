@@ -6,12 +6,9 @@ Core Experience
 
 The game has two primary modes:
 
-Story Mode
+Story Mode: A guided, panel-based experience where players follow immune responses step-by-step (starting with influenza). Users make decisions that influence outcomes such as viral clearance, immune activation, or failure states like cytokine storms or immune evasion.
 
-A guided, panel-based experience where players follow immune responses step-by-step (starting with influenza). Users make decisions that influence outcomes such as viral clearance, immune activation, or failure states like cytokine storms or immune evasion.
-
-Canvas Mode
-A more open, interactive environment where players build immune responses themselves using cell types and signaling interactions. A scoring and feedback system evaluates accuracy and provides guidance.
+Canvas Mode: A more open, interactive environment where players build immune responses themselves using cell types and signaling interactions. A scoring and feedback system evaluates accuracy and provides guidance.
 
 What It Teaches
 
@@ -32,5 +29,4 @@ Progressive complexity through zoomable layers of biological detail
 Active learning via decision-making and system building rather than passive reading
 Feedback driven improvement with real-time evaluation of user actions
 
-Goal
-To make complex immunology concepts intuitive, interactive, and engaging—bridging the gap between memorization and true understanding.
+Goal: To make complex immunology concepts intuitive, interactive, and engaging—bridging the gap between memorization and true understanding.
