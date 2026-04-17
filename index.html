@@ -207,7 +207,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
     </div>
     <div id="gb-stats">
       <div class="gb-stat">Day <span id="day-display">0</span></div>
-      <div class="gb-stat">Score <span id="score-display">0</span></div>
+      <div class="gb-stat"><span id="stage-display">Stage 1 of 5</span></div>
     </div>
   </div>
 
@@ -249,7 +249,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
           <div id="result-card">
             <div id="result-emoji">🧬</div>
             <div id="result-title">Stage complete</div>
-            <div id="result-score">+30</div>
+            
             <div id="result-msg"></div>
             <div><button class="result-btn sec" onclick="closeResult()">Review</button><button class="result-btn" id="next-btn" onclick="nextStage()">Next stage →</button></div>
           </div>
@@ -257,8 +257,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
         <div id="complete-overlay">
           <div id="complete-card">
             <div id="complete-title">Level 1 Complete</div>
-            <div id="complete-score-big">0</div>
-            <div id="complete-score-label">total score</div>
+            
+            
             <div id="complete-sub">You've traced the complete influenza immune response — from viral entry to long-lived memory.</div>
             <div class="key-concept">TLR7 → IRF3/NF-κB → IFN-α/β + pro-inflammatory cytokines</div>
             <div class="key-concept">DC CCR7↑ → afferent lymphatics → T cell zone priming</div>
@@ -311,7 +311,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
       <div id="canvas-bar">
         <div class="cv-stat">Nodes: <span id="cv-node-count">0</span></div>
         <div class="cv-stat">Links: <span id="cv-link-count">0</span></div>
-        <div class="cv-stat">Score: <span id="cv-score">0</span></div>
+        
         <div style="flex:1"></div>
         <button class="cv-btn" onclick="cvReset()">Reset</button>
         <button class="cv-btn primary" onclick="cvEvaluate()">Evaluate ↗</button>
@@ -396,17 +396,80 @@ function drawMemory(g,cx,cy,s){
   const l=e('text',{x:cx,y:cy,fill:'#ECFDF5','text-anchor':'middle','dominant-baseline':'central','font-size':s*.2,'font-weight':'700','font-family':'sans-serif'});l.textContent='M';g.appendChild(l);
 }
 function drawAntibody(g,cx,cy,s){
-  const hy=cy+s*.05,ft=hy;
-  g.appendChild(e('rect',{x:cx-s*.07,y:ft,width:s*.14,height:s*.38,rx:s*.07,fill:'#6EE7B7',stroke:'#047857','stroke-width':'1.5'}));
-  g.appendChild(e('rect',{x:cx-s*.04,y:ft-s*.05,width:s*.08,height:s*.1,rx:s*.03,fill:'#065F46',opacity:'.8'}));
-  [-1,1].forEach(side=>{
-    const ang=side*.68,al=s*.36,ex=cx+Math.sin(ang)*al,ey=hy-Math.cos(ang)*al*.82;
-    const mx=cx+Math.sin(ang)*al*.4,my=hy-al*.14;
-    const arm=e('path',{d:`M${cx},${hy} Q${mx},${my} ${ex},${ey}`,fill:'none',stroke:'#34D399','stroke-width':s*.09,'stroke-linecap':'round'});
-    g.appendChild(arm);
-    g.appendChild(e('rect',{x:ex-s*.08,y:ey-s*.1,width:s*.16,height:s*.12,rx:s*.03,fill:'#059669',opacity:'.9'}));
-    g.appendChild(e('rect',{x:ex-s*.065,y:ey-s*.095,width:s*.13,height:s*.06,rx:s*.02,fill:'#ECFDF5',opacity:'.7'}));
-  });
+  // Scale-relative block dimensions
+  const bw=s*.28, bh=s*.18, gap=s*.03, armAng=38*Math.PI/180;
+  // Colors matching reference
+  const HC='#9333EA', HV='#A855F7', LC='#0D9488', LV='#14B8A6';
+  const hs=HC, hb='#6B21A8';
+
+  // ── FC STEM (centered, vertical) ──
+  // CH3
+  g.appendChild(e('rect',{x:cx-bw/2,y:cy+s*.18,width:bw,height:bh,rx:4,fill:HC,stroke:hb,'stroke-width':'1.2'}));
+  const ch3=e('text',{x:cx,y:cy+s*.18+bh/2,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.12,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
+  ch3.textContent='CH3'; g.appendChild(ch3);
+  // CH2
+  g.appendChild(e('rect',{x:cx-bw/2,y:cy+s*.18-bh-gap,width:bw,height:bh,rx:4,fill:HC,stroke:hb,'stroke-width':'1.2'}));
+  const ch2=e('text',{x:cx,y:cy+s*.18-bh/2-gap,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.12,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
+  ch2.textContent='CH2'; g.appendChild(ch2);
+  // hinge
+  const hingeY=cy+s*.18-bh*2-gap*2;
+  g.appendChild(e('rect',{x:cx-bw*.35,y:hingeY,width:bw*.7,height:bh*.55,rx:4,fill:'#6B21A8',stroke:'#4C1D95','stroke-width':'1'}));
+  const ht=e('text',{x:cx,y:hingeY+bh*.27,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.1,fill:'#EDE9FE','font-family':'sans-serif'});
+  ht.textContent='hinge'; g.appendChild(ht);
+
+  // fork lines hinge → arms
+  const forkY=hingeY;
+  const leftPivotX=cx-bw*.25, rightPivotX=cx+bw*.25;
+  g.appendChild(e('line',{x1:leftPivotX,y1:forkY,x2:cx-s*.32,y2:forkY-s*.28,stroke:hb,'stroke-width':'1.5','stroke-linecap':'round'}));
+  g.appendChild(e('line',{x1:rightPivotX,y1:forkY,x2:cx+s*.32,y2:forkY-s*.28,stroke:hb,'stroke-width':'1.5','stroke-linecap':'round'}));
+
+  // ── LEFT FAB ARM (rotate -38deg from left pivot) ──
+  // Left arm: heavy inner (CH1, VH), light outer (CL, VL)
+  // Use rotated group from arm root
+  const lrx=cx-s*.32, lry=forkY-s*.28;
+  const lg=e('g',{transform:`translate(${lrx},${lry}) rotate(-38)`});
+  // CH1 inner
+  lg.appendChild(e('rect',{x:gap/2,y:-bh-gap,width:bw*.55,height:bh,rx:4,fill:HC,stroke:hb,'stroke-width':'1.2'}));
+  const lch1=e('text',{x:gap/2+bw*.275,y:-bh/2-gap,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
+  lch1.textContent='CH1'; lg.appendChild(lch1);
+  // VH inner
+  lg.appendChild(e('rect',{x:gap/2,y:-bh*2-gap*2,width:bw*.55,height:bh,rx:4,fill:HV,stroke:'#7E22CE','stroke-width':'1.2'}));
+  const lvh=e('text',{x:gap/2+bw*.275,y:-bh*1.5-gap*2,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
+  lvh.textContent='VH'; lg.appendChild(lvh);
+  // CL outer
+  lg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh-gap,width:bw*.55,height:bh,rx:4,fill:LC,stroke:'#0F766E','stroke-width':'1.2'}));
+  const lcl=e('text',{x:-bw*.275-gap/2,y:-bh/2-gap,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
+  lcl.textContent='CL'; lg.appendChild(lcl);
+  // VL outer
+  lg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh*2-gap*2,width:bw*.55,height:bh,rx:4,fill:LV,stroke:'#0F766E','stroke-width':'1.2'}));
+  const lvl=e('text',{x:-bw*.275-gap/2,y:-bh*1.5-gap*2,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
+  lvl.textContent='VL'; lg.appendChild(lvl);
+  // CDR dashed box at tip
+  lg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh*2-gap*2-s*.04,width:bw*1.1+gap,height:bh*2+gap*2+s*.04,rx:5,fill:'none',stroke:'#E11D48','stroke-width':'1.2','stroke-dasharray':'4 2',opacity:'.8'}));
+  g.appendChild(lg);
+
+  // ── RIGHT FAB ARM (rotate +38deg from right pivot) ──
+  const rrx=cx+s*.32, rry=forkY-s*.28;
+  const rg=e('g',{transform:`translate(${rrx},${rry}) rotate(38)`});
+  // CH1 inner (left of center in rotated space = toward stem)
+  rg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh-gap,width:bw*.55,height:bh,rx:4,fill:HC,stroke:hb,'stroke-width':'1.2'}));
+  const rch1=e('text',{x:-bw*.275-gap/2,y:-bh/2-gap,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
+  rch1.textContent='CH1'; rg.appendChild(rch1);
+  // VH inner
+  rg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh*2-gap*2,width:bw*.55,height:bh,rx:4,fill:HV,stroke:'#7E22CE','stroke-width':'1.2'}));
+  const rvh=e('text',{x:-bw*.275-gap/2,y:-bh*1.5-gap*2,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
+  rvh.textContent='VH'; rg.appendChild(rvh);
+  // CL outer
+  rg.appendChild(e('rect',{x:gap/2,y:-bh-gap,width:bw*.55,height:bh,rx:4,fill:LC,stroke:'#0F766E','stroke-width':'1.2'}));
+  const rcl=e('text',{x:gap/2+bw*.275,y:-bh/2-gap,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
+  rcl.textContent='CL'; rg.appendChild(rcl);
+  // VL outer
+  rg.appendChild(e('rect',{x:gap/2,y:-bh*2-gap*2,width:bw*.55,height:bh,rx:4,fill:LV,stroke:'#0F766E','stroke-width':'1.2'}));
+  const rvl=e('text',{x:gap/2+bw*.275,y:-bh*1.5-gap*2,'text-anchor':'middle','dominant-baseline':'central','font-size':s*.11,'font-weight':'700',fill:'#fff','font-family':'sans-serif'});
+  rvl.textContent='VL'; rg.appendChild(rvl);
+  // CDR dashed box
+  rg.appendChild(e('rect',{x:-bw*.55-gap/2,y:-bh*2-gap*2-s*.04,width:bw*1.1+gap,height:bh*2+gap*2+s*.04,rx:5,fill:'none',stroke:'#E11D48','stroke-width':'1.2','stroke-dasharray':'4 2',opacity:'.8'}));
+  g.appendChild(rg);
 }
 
 const CELL_DEFS={
@@ -627,7 +690,7 @@ const SAVE='immunocascade_v1';
 function loadP(){try{return JSON.parse(localStorage.getItem(SAVE))||{};}catch{return{};}}
 function saveP(d){localStorage.setItem(SAVE,JSON.stringify(d));}
 
-let stageIdx=0,score=0,placed={},dzMet={},dragging=null;
+let stageIdx=0,placed={},dzMet={},dragging=null;
 
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function goHome(){showScreen('title-screen');}
@@ -838,7 +901,7 @@ function cvOnUp(ev){
         const fa=CV_NODES_DEF.find(n=>n.id===cvConnectFrom)?.label.replace('\n',' ');
         const tb=CV_NODES_DEF.find(n=>n.id===target)?.label.replace('\n',' ');
         cvShowFb(valid?`✓ ${fa} → ${tb}`:`✗ Unexpected — does this make biological sense?`,valid?'#10B981':'#EF4444');
-        document.getElementById('cv-score').textContent=cvLinks.filter(l=>CV_VALID.has(`${l.from}->${l.to}`)||CV_VALID.has(`${l.to}->${l.from}`)).length*10;
+        document.getElementById('cv-link-count').textContent=cvLinks.length;
       }
     }
     document.getElementById('cv-drag-line').innerHTML='';
@@ -852,7 +915,8 @@ function cvReset(){
   cvPlaced={}; cvLinks=[]; cvNextZ=1;
   document.getElementById('cv-drag-line').innerHTML='';
   document.getElementById('canvas-hint').style.display='';
-  document.getElementById('cv-score').textContent='0';
+  document.getElementById('cv-node-count').textContent='0';
+  document.getElementById('cv-link-count').textContent='0';
   CV_NODES_DEF.forEach(nd=>document.getElementById('cvchip-'+nd.id)?.classList.remove('placed'));
   cvRender();
 }
@@ -863,13 +927,12 @@ function cvEvaluate(){
   const missing=coreRequired.filter(id=>!placed.includes(id));
   const correctLinks=cvLinks.filter(l=>CV_VALID.has(`${l.from}->${l.to}`)||CV_VALID.has(`${l.to}->${l.from}`)).length;
   const wrongLinks=cvLinks.length-correctLinks;
-  const score=Math.max(0,correctLinks*10-wrongLinks*5-missing.length*8);
-  const pct=Math.min(100,Math.round((score/(CV_VALID.size*10))*100));
+  const pct=cvLinks.length===0?0:Math.round((correctLinks/cvLinks.length)*100);
   let msg='';
-  if(pct>=75)msg=`Strong pathway — ${correctLinks} correct connections. ${wrongLinks>0?wrongLinks+' to review.':''} ${missing.length>0?'Missing: '+missing.join(', ')+'.':''}`;
-  else if(pct>=40)msg=`Partial — ${correctLinks} correct, ${wrongLinks} incorrect. Missing nodes: ${missing.join(', ')||'none'}.`;
-  else msg=`Incomplete. Start with Influenza → TLR7 → NF-κB/IFN. ${missing.length} key nodes missing.`;
-  cvShowFb(`Score ${pct}% — ${msg}`, pct>=75?'#10B981':pct>=40?'#F59E0B':'#EF4444');
+  if(pct>=80&&missing.length===0)msg=`Complete pathway — ${correctLinks} correct connections, ${wrongLinks} to review.`;
+  else if(pct>=60)msg=`${correctLinks} correct links, ${wrongLinks} incorrect. Missing: ${missing.join(', ')||'none'}.`;
+  else msg=`Start with Influenza → TLR7 → NF-κB / IFN. ${missing.length} key nodes missing.`;
+  cvShowFb(`${pct}% accuracy — ${msg}`, pct>=80&&missing.length===0?'#10B981':pct>=60?'#F59E0B':'#EF4444');
 }
 
 let cvFbTimer=null;
@@ -880,9 +943,9 @@ function cvShowFb(msg,color='#FDE68A'){
 }
 
 function resetGame(){
-  score=0;stageIdx=0;placed={};dzMet={};dragging=null;
-  document.getElementById('score-display').textContent='0';
+  stageIdx=0;placed={};dzMet={};dragging=null;
   document.getElementById('day-display').textContent='0';
+  document.getElementById('stage-display').textContent='Stage 1 of '+STAGES.length;
   document.getElementById('result-overlay').classList.remove('show');
   document.getElementById('complete-overlay').classList.remove('show');
   hideFb();resetTL();loadStage(0);
@@ -895,6 +958,7 @@ function loadStage(idx){
   document.getElementById('narr-text').innerHTML=st.narr;
   document.getElementById('narr-prompt').textContent=st.prompt;
   document.getElementById('day-display').textContent=st.dayNum;
+  document.getElementById('stage-display').textContent='Stage '+(idx+1)+' of '+STAGES.length;
   document.getElementById('tl-'+st.tlIndex).classList.add('active');
   document.getElementById('tll-'+st.tlIndex).classList.add('active');
   buildScene(st); buildTray(st);
@@ -966,8 +1030,7 @@ document.addEventListener('mouseup',ev=>{
   st.dropZones.forEach(dz=>{if(!dzMet[dz.id]&&Math.hypot(pt.x-dz.cx,pt.y-dz.cy)<dz.r)hitDZ=dz;});
   if(!hitDZ){showFb('Drop into a highlighted zone','#D97706');return;}
   if(hitDZ.accepts.includes(id)){
-    placed[id]=true; dzMet[hitDZ.id]=true; score+=15;
-    document.getElementById('score-display').textContent=score;
+    placed[id]=true; dzMet[hitDZ.id]=true;
     document.getElementById('chip-'+id).classList.add('used');
     document.getElementById(hitDZ.id).style.display='none';
     showFb(hitDZ.correctMsg,'#059669'); placeCell(id,hitDZ.cx,hitDZ.cy);
@@ -988,13 +1051,12 @@ function showResult(){
   const st=STAGES[stageIdx];
   document.getElementById('result-emoji').textContent=st.resultEmoji;
   document.getElementById('result-title').textContent=st.resultTitle;
-  document.getElementById('result-score').textContent='+'+score+' pts';
   document.getElementById('result-msg').textContent=st.resultMsg;
   const hasNext=stageIdx<STAGES.length-1;
   document.getElementById('next-btn').textContent=hasNext?'Next stage →':'See results';
   document.getElementById('result-overlay').classList.add('show');
   const prog=loadP(); prog.flu=prog.flu||{};
-  prog.flu['stage'+stageIdx]=true; prog.flu.score=Math.max(prog.flu.score||0,score); saveP(prog);
+  prog.flu['stage'+stageIdx]=true; saveP(prog);
   const pct=Math.round((Object.keys(prog.flu).filter(k=>k.startsWith('stage')).length/STAGES.length)*100);
   const fill=document.getElementById('prog-flu'); if(fill)fill.style.width=pct+'%';
 }
@@ -1010,7 +1072,6 @@ function nextStage(){
 }
 function showComplete(){
   document.getElementById('complete-overlay').classList.add('show');
-  document.getElementById('complete-score-big').textContent=score;
 }
 function closeComplete(){document.getElementById('complete-overlay').classList.remove('show');}
 
