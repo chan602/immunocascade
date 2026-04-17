@@ -522,6 +522,67 @@ function drawAntibody(g,cx,cy,s){
   void 0;
 }
 
+function drawTLR(g,cx,cy,s){
+  // Toll-like receptor: horseshoe shape with LRR (leucine-rich repeat) segments
+  // drawn as alternating colored bands around the inner arc
+  const R=s*.34, thick=s*.12;
+  // outer horseshoe arc (open at bottom) — drawn as thick stroked arc path
+  const startA=Math.PI*.15, endA=Math.PI*.85; // opens downward
+  const steps=12;
+  for(let i=0;i<steps;i++){
+    const a0=startA+i*(endA-startA)/steps;
+    const a1=startA+(i+1)*(endA-startA)/steps;
+    const amid=(a0+a1)/2;
+    // outer arc segment
+    const ox0=cx+Math.cos(a0)*(R+thick), oy0=cy-Math.sin(a0)*(R+thick);
+    const ox1=cx+Math.cos(a1)*(R+thick), oy1=cy-Math.sin(a1)*(R+thick);
+    const ix0=cx+Math.cos(a0)*R,         iy0=cy-Math.sin(a0)*R;
+    const ix1=cx+Math.cos(a1)*R,         iy1=cy-Math.sin(a1)*R;
+    const segFill=i%2===0?'#FB923C':'#FDBA74';
+    const seg=e('path',{
+      d:`M${ix0},${iy0} L${ox0},${oy0} A${R+thick},${R+thick} 0 0,0 ${ox1},${oy1} L${ix1},${iy1} A${R},${R} 0 0,1 ${ix0},${iy0}`,
+      fill:segFill,stroke:'#EA580C','stroke-width':'0.6'
+    });
+    g.appendChild(seg);
+  }
+  // transmembrane stem (two short parallel lines going down from the opening)
+  const stemW=s*.08, stemH=s*.22;
+  const leftX=cx+Math.cos(startA)*R, leftY=cy-Math.sin(startA)*R;
+  const rightX=cx+Math.cos(endA)*R,  rightY=cy-Math.sin(endA)*R;
+  g.appendChild(e('rect',{x:leftX-stemW/2, y:leftY, width:stemW,height:stemH,rx:stemW/2,fill:'#9A3412',opacity:'.8'}));
+  g.appendChild(e('rect',{x:rightX-stemW/2,y:rightY,width:stemW,height:stemH,rx:stemW/2,fill:'#9A3412',opacity:'.8'}));
+  // cytoplasmic TIR domain — small filled oval below stems
+  g.appendChild(e('ellipse',{cx,cy:cy+s*.26,rx:s*.18,ry:s*.1,fill:'#C2410C',stroke:'#9A3412','stroke-width':'1'}));
+}
+
+function drawCytokine(g,cx,cy,s){
+  // Cluster of small triangles + dots radiating outward — inflammatory signals
+  // pulsing animation handled via style on the group
+  g.style.animation='pulse 2s ease-in-out infinite';
+  g.style.transformOrigin=`${cx}px ${cy}px`;
+  const positions=[
+    [0,-1],[.71,-.71],[1,0],[.71,.71],[0,1],[-.71,.71],[-1,0],[-.71,-.71]
+  ];
+  positions.forEach(([ax,ay],i)=>{
+    const r=s*(.22+.08*(i%2));
+    const tx=cx+ax*r, ty=cy+ay*r;
+    if(i%2===0){
+      // triangle pointing outward
+      const ang=Math.atan2(ay,ax);
+      const ts=s*.1;
+      const x1=tx+Math.cos(ang)*ts,       y1=ty+Math.sin(ang)*ts;
+      const x2=tx+Math.cos(ang+2.2)*ts*.7, y2=ty+Math.sin(ang+2.2)*ts*.7;
+      const x3=tx+Math.cos(ang-2.2)*ts*.7, y3=ty+Math.sin(ang-2.2)*ts*.7;
+      g.appendChild(e('polygon',{points:`${x1},${y1} ${x2},${y2} ${x3},${y3}`,fill:'#F472B6',stroke:'#DB2777','stroke-width':'0.8'}));
+    } else {
+      // small dot
+      g.appendChild(e('circle',{cx:tx,cy:ty,r:s*.07,fill:'#FB7185',stroke:'#E11D48','stroke-width':'0.8'}));
+    }
+  });
+  // tiny central nucleus dot
+  g.appendChild(e('circle',{cx,cy,r:s*.08,fill:'#BE185D'}));
+}
+
 const CELL_DEFS={
   macrophage:{label:'Macrophage',draw:drawMacrophage},
   nkcell:{label:'NK cell',draw:drawNK},
@@ -532,6 +593,8 @@ const CELL_DEFS={
   plasma:{label:'Plasma cell',draw:drawPlasma},
   memory:{label:'Memory cell',draw:drawMemory},
   antibody:{label:'IgG antibody',draw:drawAntibody},
+  tlr7:{label:'TLR7',draw:drawTLR},
+  cytokine:{label:'Cytokine',draw:drawCytokine},
 };
 
 /* SCENE BUILDERS */
@@ -773,9 +836,9 @@ function setMode(m,btn){
 ═══════════════════════════════════════════════ */
 const CV_NODES_DEF=[
   {id:'influenza', label:'Influenza\nvirion',  cat:'pathogen', draw:null},
-  {id:'tlr7',      label:'TLR7\ndetection',    cat:'innate',   draw:null},
+  {id:'tlr7',      label:'TLR7\ndetection',    cat:'innate',   draw:drawTLR},
   {id:'nfkb',      label:'NF-κB\nsignaling',   cat:'innate',   draw:null},
-  {id:'ifn',       label:'IFN-α/β\nrelease',   cat:'cytokine', draw:null},
+  {id:'ifn',       label:'IFN-α/β\nrelease',   cat:'cytokine', draw:drawCytokine},
   {id:'macrophage',label:'Macrophage',          cat:'innate',   draw:drawMacrophage},
   {id:'nkcell',    label:'NK cell',             cat:'innate',   draw:drawNK},
   {id:'dendritic', label:'Dendritic\ncell',     cat:'innate',   draw:drawDendritic},
