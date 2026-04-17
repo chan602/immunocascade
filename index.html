@@ -642,6 +642,25 @@ function drawInfluenza(g,cx,cy,s){
   });
 }
 
+function drawClearance(g,cx,cy,s){
+  // Viral clearance: a fading/dissolving virion overlaid with a green checkmark shield
+  // Faint ghost virion (cleared)
+  g.appendChild(e('ellipse',{cx,cy:cy+s*.04,rx:s*.28,ry:s*.22,fill:'rgba(254,202,202,.25)',stroke:'rgba(220,38,38,.3)','stroke-width':'1','stroke-dasharray':'3 2'}));
+  for(let i=0;i<5;i++){
+    const a=(i/5)*Math.PI*2;
+    g.appendChild(e('line',{x1:cx+Math.cos(a)*s*.27,y1:cy+s*.04+Math.sin(a)*s*.21,
+      x2:cx+Math.cos(a)*s*.38,y2:cy+s*.04+Math.sin(a)*s*.3,
+      stroke:'rgba(220,38,38,.2)','stroke-width':'1','stroke-linecap':'round'}));
+  }
+  // Green shield background
+  const shieldPath=`M${cx},${cy-s*.38} C${cx+s*.3},${cy-s*.38} ${cx+s*.38},${cy-s*.1} ${cx+s*.38},${cy+s*.12} C${cx+s*.38},${cy+s*.34} ${cx},${cy+s*.46} ${cx},${cy+s*.46} C${cx},${cy+s*.46} ${cx-s*.38},${cy+s*.34} ${cx-s*.38},${cy+s*.12} C${cx-s*.38},${cy-s*.1} ${cx-s*.3},${cy-s*.38} ${cx},${cy-s*.38}`;
+  g.appendChild(e('path',{d:shieldPath,fill:'rgba(5,150,105,.22)',stroke:'#059669','stroke-width':'1.5'}));
+  // Checkmark inside shield
+  const ck=e('path',{d:`M${cx-s*.14},${cy+s*.04} L${cx-s*.02},${cy+s*.18} L${cx+s*.18},${cy-s*.14}`,
+    fill:'none',stroke:'#10B981','stroke-width':s*.1,'stroke-linecap':'round','stroke-linejoin':'round'});
+  g.appendChild(ck);
+}
+
 const CELL_DEFS={
   macrophage:{label:'Macrophage',draw:drawMacrophage},
   nkcell:{label:'NK cell',draw:drawNK},
@@ -694,14 +713,51 @@ function dashArrow(root,d,stroke,marker){
 
 function buildStage0(root){
   baseEpithelium(root);
-  root.appendChild(virusGrp(155,98,24,18,12,false));
-  root.appendChild(virusGrp(295,55,16,12,18,true));
-  const vi=e('g'); vi.style.animation='floatY 2.5s ease-in-out infinite'; vi.style.transformOrigin='430px 198px';
-  vi.appendChild(e('ellipse',{cx:430,cy:198,rx:14,ry:10,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.3',opacity:'.9'}));
-  vi.appendChild(e('line',{x1:430,y1:208,x2:430,y2:227,stroke:'#DC2626','stroke-width':'1','stroke-dasharray':'3 2',fill:'none',opacity:'.55'}));
-  txt(vi,'entry via HA',430,194,'7.5','#FCA5A5','middle'); root.appendChild(vi);
-  dashArrow(root,'M172 108 Q220 130 248 195','#D97706','arr');
-  txt(root,'TLR7 → NF-κB',210,147,'7.5','#92400E').setAttribute('transform','rotate(-57 210 147)');
+
+  // ── Virions in lumen ──
+  root.appendChild(virusGrp(130,82,22,16,12,false));
+  root.appendChild(virusGrp(275,50,15,11,18,true));
+  root.appendChild(virusGrp(480,68,18,13,15,false));
+
+  // ── Virus entering epithelium (HA binding) ──
+  const vi=e('g'); vi.style.animation='floatY 2.5s ease-in-out infinite'; vi.style.transformOrigin='390px 175px';
+  vi.appendChild(e('ellipse',{cx:390,cy:175,rx:13,ry:9,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.3',opacity:'.95'}));
+  // HA binding line to membrane
+  vi.appendChild(e('line',{x1:390,y1:184,x2:390,y2:226,stroke:'#DC2626','stroke-width':'1','stroke-dasharray':'3 2',opacity:'.6'}));
+  txt(vi,'HA binds',390,170,'7','#FCA5A5','middle');
+  txt(vi,'sialic acid',390,180,'6.5','#FCA5A5','middle');
+  root.appendChild(vi);
+
+  // ── TLR7 receptor ON the membrane ──
+  // Draw it sitting in the epithelial layer at ~cx=248
+  const tlrG=e('g');
+  drawTLR(tlrG,248,215,22); // sits right in the membrane band
+  txt(root,'TLR7',248,199,'7','#FB923C','middle');
+  root.appendChild(tlrG);
+
+  // ── NF-κB activation arrow from TLR7 ──
+  const nfArrow=e('path',{d:'M248 238 Q248 265 248 275',fill:'none',stroke:'#EA580C','stroke-width':'1.2','stroke-dasharray':'4 3','marker-end':'url(#arr)',opacity:'.75'});
+  nfArrow.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(nfArrow);
+  txt(root,'NF-κB',248,285,'7','rgba(234,88,12,.65)','middle');
+
+  // ── IFN-α/β burst (from infected cell) ──
+  // Small cytokine cluster to the right of TLR7
+  const ifnG=e('g'); ifnG.style.animation='pulse 2s ease-in-out infinite'; ifnG.style.transformOrigin='355px 210px';
+  drawCytokine(ifnG,355,210,14); root.appendChild(ifnG);
+  txt(root,'IFN-α/β',355,232,'7','rgba(244,114,182,.7)','middle');
+
+  // Dashed signal arrow: TLR7 → IFN
+  const ifnArr=e('path',{d:'M262 215 Q308 213 340 210',fill:'none',stroke:'rgba(251,146,60,.5)','stroke-width':'1','stroke-dasharray':'3 2','marker-end':'url(#arr)',opacity:'.6'});
+  ifnArr.style.animation='dashFlow 2s linear infinite'; root.appendChild(ifnArr);
+
+  // ── MHC-I upregulation label on blood vessel side ──
+  txt(root,'MHC-I ↑',630,70,'7','rgba(107,32,32,.9)','middle');
+  txt(root,'on epithelium',630,80,'6.5','rgba(107,32,32,.7)','middle');
+
+  // ── Drop zone hints (subtle, behind game zone circles) ──
+  // These are decorative anchors — actual interactive zones are added by buildScene()
+  // Small label above where macrophage zone will be
+  txt(root,'innate patrol zone',360,132,'7','rgba(217,119,6,.28)','middle');
 }
 
 function buildStage1(root){
@@ -896,24 +952,67 @@ function buildStage3(root){
 
 function buildStage4(root){
   baseEpithelium(root);
-  // mostly cleared — faint virion remnants
-  const vf=e('g'); vf.style.opacity='.25';
-  vf.appendChild(e('ellipse',{cx:160,cy:90,rx:16,ry:12,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.2'}));
-  vf.appendChild(e('ellipse',{cx:300,cy:55,rx:10,ry:7,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1',opacity:'.6'}));
+
+  // ── Header ──
+  txt(root,'VIRAL CLEARANCE — Day 7–14',340,18,'8','rgba(5,150,105,.6)','middle');
+  txt(root,'IFN-γ antiviral state · contraction phase',340,30,'7','rgba(217,119,6,.38)','middle');
+
+  // ── Faint dying virions (mostly cleared) ──
+  const vf=e('g'); vf.style.opacity='.2';
+  vf.appendChild(e('ellipse',{cx:140,cy:78,rx:14,ry:10,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.2'}));
+  vf.appendChild(e('ellipse',{cx:280,cy:52,rx:9,ry:6,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1'}));
   root.appendChild(vf);
-  // CTL killing arrow
-  const ka=e('path',{d:'M370 130 Q320 110 250 95',fill:'none',stroke:'#DC2626','stroke-width':'1.1','stroke-dasharray':'4 3','marker-end':'url(#arr-r)',opacity:'.55'});
-  ka.style.animation='dashFlow 1.5s linear infinite'; root.appendChild(ka);
-  txt(root,'CTL killing',290,110,'7.5','rgba(220,38,38,.55)','middle');
-  txt(root,'perforin / granzyme B',290,121,'7','rgba(220,38,38,.4)','middle');
-  // antibody neutralization arrows
-  const na=e('path',{d:'M500 100 Q430 80 320 60',fill:'none',stroke:'#059669','stroke-width':'1.1','stroke-dasharray':'4 3','marker-end':'url(#arr-g)',opacity:'.55'});
-  na.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(na);
-  txt(root,'IgG neutralization',430,88,'7.5','rgba(5,150,105,.55)','middle');
-  // clearance label
-  txt(root,'VIRAL CLEARANCE — Day 7–10',340,22,'8','rgba(5,150,105,.5)','middle');
-  // IFN-γ antiviral state
-  txt(root,'IFN-γ antiviral state maintained',340,36,'7','rgba(217,119,6,.4)','middle');
+
+  // ── Infected epithelial cell (being killed) ──
+  // Dying cell — irregular outline, orange/red, with viral debris inside
+  root.appendChild(e('ellipse',{cx:175,cy:182,rx:28,ry:22,fill:'rgba(220,38,38,.18)',stroke:'#DC2626','stroke-width':'1.3','stroke-dasharray':'3 2'}));
+  root.appendChild(e('ellipse',{cx:175,cy:182,rx:12,ry:9,fill:'rgba(220,38,38,.35)',opacity:'.6'})); // nucleus
+  txt(root,'infected cell',175,211,'6.5','rgba(220,38,38,.55)','middle');
+  txt(root,'MHC-I:peptide',175,220,'6','rgba(220,38,38,.4)','middle');
+
+  // ── CD8 CTL attacking the infected cell ──
+  const ctlG=e('g'); ctlG.style.animation='floatY 2.8s ease-in-out infinite'; ctlG.style.transformOrigin='230px 155px';
+  drawCD8(ctlG,230,155,26);
+  txt(ctlG,'CTL',230,188,'7.5','#C4B5FD','middle');
+  root.appendChild(ctlG);
+  // Kill arrow from CTL to infected cell
+  const killArr=e('path',{d:'M216 170 Q200 175 192 180',fill:'none',stroke:'#DC2626','stroke-width':'1.5','stroke-dasharray':'4 2','marker-end':'url(#arr-r)',opacity:'.8'});
+  killArr.style.animation='dashFlow 1.2s linear infinite'; root.appendChild(killArr);
+  txt(root,'perforin',200,162,'6.5','rgba(220,38,38,.6)','middle');
+  txt(root,'granzyme B',200,170,'6','rgba(220,38,38,.45)','middle');
+  // Apoptosis burst on the cell
+  for(let a=0;a<7;a++){
+    const ang=(a/7)*Math.PI*2;
+    root.appendChild(e('line',{x1:175+Math.cos(ang)*22,y1:182+Math.sin(ang)*17,x2:175+Math.cos(ang)*32,y2:182+Math.sin(ang)*25,stroke:'#EF4444','stroke-width':'1',opacity:'.4','stroke-linecap':'round'}));
+  }
+
+  // ── Plasma cell releasing IgG antibodies ──
+  const pcG=e('g'); pcG.style.animation='floatY 3.5s ease-in-out infinite 0.8s'; pcG.style.transformOrigin='440px 180px';
+  drawPlasma(pcG,440,180,26);
+  txt(pcG,'plasma cell',440,214,'7.5','rgba(221,214,254,.7)','middle');
+  root.appendChild(pcG);
+  // Three antibodies launching outward
+  [[370,90],[320,60],[280,75]].forEach(([tx,ty],i)=>{
+    const abG=e('g'); abG.style.animation=`floatY ${2+i*.4}s ease-in-out infinite ${i*.3}s`;
+    abG.style.transformOrigin=`${tx}px ${ty}px`;
+    drawAntibody(abG,tx,ty,12); root.appendChild(abG);
+  });
+  // Arrow from plasma → antibodies
+  const abArr=e('path',{d:'M422 170 Q390 140 365 100',fill:'none',stroke:'rgba(5,150,105,.5)','stroke-width':'1','stroke-dasharray':'4 3','marker-end':'url(#arr-g)',opacity:'.6'});
+  abArr.style.animation='dashFlow 2s linear infinite'; root.appendChild(abArr);
+  txt(root,'IgG neutralization',388,138,'7','rgba(5,150,105,.6)','middle');
+
+  // ── Memory T cell in blood vessel (right panel) ──
+  const memG=e('g'); memG.style.animation='floatY 4s ease-in-out infinite 1.2s'; memG.style.transformOrigin='634px 60px';
+  drawMemory(memG,634,60,22);
+  txt(root,'Tcm / Tem',634,90,'7','rgba(16,185,129,.65)','middle');
+  txt(root,'CCR7± persist',634,100,'6.5','rgba(16,185,129,.45)','middle');
+  root.appendChild(memG);
+  txt(root,'→ years of protection',634,112,'6','rgba(217,119,6,.4)','middle');
+
+  // ── Contraction label ──
+  txt(root,'>90% effector cells → apoptosis',340,268,'7','rgba(217,119,6,.45)','middle');
+  txt(root,'survivors differentiate into memory (Tcm·Tem·Trm)',340,279,'6.5','rgba(217,119,6,.35)','middle');
 }
 
 /* STAGES */
@@ -1037,7 +1136,7 @@ const CV_NODES_DEF=[
   {id:'bcell',     label:'B cell',              cat:'adaptive', draw:drawBcell},
   {id:'antibody',  label:'IgG\nantibody',       cat:'outcome',  draw:drawAntibody},
   {id:'memory',    label:'Memory\ncell',        cat:'outcome',  draw:drawMemory},
-  {id:'clearance', label:'Viral\nclearance',    cat:'outcome',  draw:null},
+  {id:'clearance', label:'Viral\nclearance',    cat:'outcome',  draw:drawClearance},
 ];
 
 const CV_VALID=new Set([
