@@ -9,6 +9,7 @@ The game has two primary modes:
 Story Mode
 
 A guided, panel-based experience where players follow immune responses step-by-step (starting with influenza). Users make decisions that influence outcomes such as viral clearance, immune activation, or failure states like cytokine storms or immune evasion.
+
 Canvas Mode
 A more open, interactive environment where players build immune responses themselves using cell types and signaling interactions. A scoring and feedback system evaluates accuracy and provides guidance.
 
