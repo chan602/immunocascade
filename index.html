@@ -87,7 +87,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .tl-line.done{background:var(--green);}
 
 #game-main{flex:1;display:flex;flex-direction:row;min-height:0;overflow:hidden;}
-#cell-tray{width:90px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:10px 7px 12px;overflow-y:auto;gap:0;}
+#cell-tray{width:90px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:10px 7px 12px;overflow-y:auto;overflow-x:hidden;min-height:0;}
 #tray-label{font-family:var(--font-mono);font-size:7px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;text-align:center;line-height:1.4;}
 #tray-row{display:flex;flex-direction:column;gap:8px;align-items:center;}
 .cell-chip{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:7px 5px 5px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:grab;transition:border-color .15s,transform .15s;width:74px;flex-shrink:0;user-select:none;}
@@ -97,7 +97,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .chip-name{font-family:var(--font-mono);font-size:7.5px;color:var(--amber3);text-align:center;line-height:1.2;}
 #game-content{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
 #scene-wrap{position:relative;background:var(--tissue);overflow:hidden;flex:1;min-height:0;}
-#scene-svg{width:100%;height:100%;display:block;}
+#scene-svg{width:100%;height:100%;display:block;user-select:none;-webkit-user-select:none;}
 #feedback-bar{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid var(--amber);border-radius:20px;padding:5px 16px;font-family:var(--font-mono);font-size:11px;color:var(--amber3);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:10;max-width:90%;}
 #feedback-bar.show{opacity:1;}
 #drag-ghost{position:absolute;pointer-events:none;z-index:50;display:none;opacity:.88;}
@@ -129,11 +129,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .key-concept{background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:11px;color:var(--green2);text-align:left;font-family:var(--font-mono);}
 
 /* CANVAS MODE */
-#canvas-wrap{flex:1;display:none;flex-direction:row;min-height:0;overflow:hidden;}
+#canvas-wrap{flex:1;display:none;flex-direction:row;min-height:0;overflow:hidden;height:100%;}
 #canvas-wrap.active{display:flex;}
-#canvas-main{flex:1;position:relative;background:#1a0800;overflow:hidden;}
-#canvas-svg{width:100%;height:100%;display:block;cursor:crosshair;}
-#canvas-tray{width:90px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;padding:10px 7px 12px;overflow-y:auto;gap:0;}
+#canvas-main{flex:1;background:#1a0800;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;}
+#canvas-svg-wrap{flex:1;position:relative;overflow:hidden;min-height:0;}
+#canvas-svg{width:100%;height:100%;display:block;cursor:crosshair;user-select:none;-webkit-user-select:none;}
+#canvas-tray{width:90px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;padding:10px 7px 12px;overflow-y:auto;overflow-x:hidden;min-height:0;}
 #canvas-tray-label{font-family:var(--font-mono);font-size:7px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;text-align:center;line-height:1.4;}
 #canvas-tray-row{display:flex;flex-direction:column;gap:8px;align-items:center;}
 .canvas-chip{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:7px 5px 5px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:grab;transition:border-color .15s,transform .15s;width:74px;flex-shrink:0;user-select:none;}
@@ -150,20 +151,91 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 #cv-feedback.show{opacity:1;}
 #cv-drag-ghost{position:absolute;pointer-events:none;z-index:50;display:none;opacity:.85;}
 
-#ai-panel{
-  background:var(--bg2);
-  border-top:1px solid var(--border);
-  padding:12px 18px;
-  min-height:64px;
-  flex-shrink:0;
-  font-size:12px;
-}
+#ai-panel{background:var(--bg2);border-top:1px solid var(--border);padding:10px 16px;max-height:120px;overflow-y:auto;flex-shrink:0;font-size:12px;}
 #ai-panel-inner{display:flex;align-items:flex-start;gap:10px;}
 #ai-empty{color:var(--muted);font-family:var(--font-mono);font-size:10px;line-height:1.6;}
 #ai-loading{display:flex;align-items:center;gap:10px;color:var(--amber3);font-family:var(--font-mono);font-size:11px;}
 .ai-spinner{width:14px;height:14px;border:2px solid rgba(217,119,6,.3);border-top-color:var(--amber);border-radius:50%;animation:spinSlow .7s linear infinite;flex-shrink:0;}
 #ai-accuracy{font-family:var(--font-mono);font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:var(--bg3);color:var(--amber3);border:1px solid var(--border);margin-bottom:6px;display:inline-block;}
 #ai-text{font-size:11.5px;color:var(--amber3);line-height:1.7;white-space:pre-wrap;}
+
+/* ── MOBILE ── */
+@media(max-width:600px){
+  /* Title */
+  #title-logo{font-size:44px;}
+  #title-sub{font-size:14px;margin-bottom:28px;}
+  #level-select{grid-template-columns:1fr 1fr;gap:10px;}
+  .lc-desc{display:none;}
+
+  /* Game bar */
+  #game-bar{padding:8px 10px;gap:8px;flex-wrap:wrap;}
+  #gb-name{font-size:13px;}
+  #mode-tabs{order:3;width:100%;}
+  .mode-tab{flex:1;text-align:center;}
+  #gb-stats{gap:6px;}
+  .gb-stat{font-size:10px;padding:2px 8px;}
+
+  /* Timeline — horizontal scroll, smaller dots */
+  #timeline{padding:7px 10px;}
+  .tl-dot{width:22px;height:22px;font-size:8px;}
+  .tl-label{font-size:7.5px;max-width:40px;}
+
+  /* Story mode: collapse left tray to bottom strip */
+  #game-main{flex-direction:column;}
+  #cell-tray{
+    width:100%;
+    height:72px;
+    flex-direction:row;
+    border-right:none;
+    border-top:1px solid var(--border);
+    padding:6px 10px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    order:2;
+  }
+  #tray-label{display:none;}
+  #tray-row{flex-direction:row;gap:6px;align-items:center;}
+  .cell-chip{width:58px;flex-shrink:0;}
+  .cell-chip:hover{transform:translateY(-2px);}
+  #game-content{order:1;flex:1;}
+
+  /* Narrative compact */
+  #narrative{padding:8px 12px;}
+  #narr-day{min-width:40px;font-size:8px;}
+  #narr-text{font-size:11px;}
+  #narr-prompt{font-size:10px;}
+
+  /* Canvas mode: tray moves to bottom */
+  #canvas-wrap{flex-direction:column;}
+  #canvas-tray{
+    width:100%;
+    height:74px;
+    flex-direction:row;
+    border-left:none;
+    border-top:1px solid var(--border);
+    padding:6px 10px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    order:2;
+  }
+  #canvas-tray-label{display:none;}
+  #canvas-tray-row{flex-direction:row;gap:6px;align-items:center;}
+  .canvas-chip{width:58px;flex-shrink:0;}
+  #canvas-main{order:1;flex:1;}
+
+  /* AI panel compact */
+  #ai-panel{padding:8px 12px;min-height:48px;}
+  #ai-text{font-size:11px;}
+
+  /* Result cards */
+  #result-card{padding:20px 18px;max-width:90vw;}
+  #complete-card{padding:22px 18px;max-width:92vw;}
+}
+
+@media(max-width:380px){
+  #level-select{grid-template-columns:1fr;}
+  #title-logo{font-size:36px;}
+}
 </style>
 </head>
 <body>
@@ -217,8 +289,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
       <div id="gb-name">Level 1 — Influenza</div>
     </div>
     <div id="mode-tabs">
-      <button class="mode-tab active" onclick="setMode('story',this)">Story</button>
-      <button class="mode-tab" onclick="setMode('canvas',this)">Canvas</button>
+      <button class="mode-tab active" id="tab-story" onclick="setMode('story',this)">Story</button>
+      <button class="mode-tab" id="tab-canvas" onclick="setMode('canvas',this)">Canvas 🔒</button>
     </div>
     <div id="gb-stats">
       <div class="gb-stat">Day <span id="day-display">0</span></div>
@@ -306,9 +378,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
       <div id="canvas-tray-row"></div>
     </div>
     <!-- main canvas + bottom bar -->
-    <div id="canvas-main" style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
-      <div style="flex:1;position:relative;overflow:hidden;">
-        <svg id="canvas-svg" viewBox="0 0 680 520" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block;cursor:crosshair;">
+    <div id="canvas-main">
+      <div id="canvas-svg-wrap">
+        <svg id="canvas-svg" viewBox="0 0 680 520" preserveAspectRatio="xMidYMid meet">
           <defs>
             <marker id="cv-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
               <path d="M2 2L8 5L2 8" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round"/>
@@ -319,7 +391,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
           <g id="cv-nodes"></g>
           <g id="cv-drag-line"></g>
         </svg>
-        <div id="canvas-hint">Drag cells from the right tray onto the canvas.<br>Connect by dragging from the ● on each node to another node.<br>Build the complete influenza immune response.</div>
+        <div id="canvas-hint">Drag cells from the right tray onto the canvas.<br>Connect by dragging from the ● on each node to another node.<br>Right-click any connection to remove it.</div>
         <div id="cv-feedback"></div>
         <div id="cv-drag-ghost"></div>
       </div>
@@ -679,6 +751,16 @@ function setMode(m,btn){
   const gm=document.getElementById('game-main');
   const cw=document.getElementById('canvas-wrap');
   if(m==='canvas'){
+    // Check if story is complete
+    const prog=loadP();
+    const storyDone=prog.flu?.levelComplete===true;
+    if(!storyDone){
+      // revert tab to story
+      document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+      document.getElementById('tab-story')?.classList.add('active');
+      showFb('Complete Story Mode first to unlock Canvas Mode','#D97706');
+      return;
+    }
     gm.style.display='none'; cw.classList.add('active');
     if(!cvInitDone) cvInit();
   } else {
@@ -796,12 +878,23 @@ function cvRender(){
 
 function cvRenderLinks(){
   const layer=document.getElementById('cv-links'); layer.innerHTML='';
-  cvLinks.forEach(lk=>{
+  cvLinks.forEach((lk,idx)=>{
     const a=cvPlaced[lk.from],b=cvPlaced[lk.to]; if(!a||!b)return;
     const valid=CV_VALID.has(`${lk.from}->${lk.to}`)||CV_VALID.has(`${lk.to}->${lk.from}`);
     const col=valid?'#10B981':'#EF4444';
+    // visible line
     const ln=e('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:col,'stroke-width':'2','marker-end':'url(#cv-arr)','stroke-opacity':'.85'});
+    // wide invisible hit area for easier right-click
+    const hit=e('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'transparent','stroke-width':'14',cursor:'pointer'});
+    hit.addEventListener('contextmenu',ev=>{
+      ev.preventDefault();
+      cvLinks.splice(idx,1);
+      cvShowFb('Connection removed — right-click any link to delete','#D97706');
+      cvRender();
+    });
+    hit.title='Right-click to remove';
     layer.appendChild(ln);
+    layer.appendChild(hit);
   });
 }
 
@@ -813,10 +906,10 @@ function cvRenderNodes(){
     // background card
     const W=80,H=50;
     g.appendChild(e('rect',{x:p.x-W/2,y:p.y-H/2,width:W,height:H,rx:10,fill:col.fill,stroke:col.stroke,'stroke-width':'1.5'}));
-    // cell illustration if available
-    if(def.draw){
+    // antibody draw fn renders huge at s=14 — use label-only for it
+    const useIllustration=def.draw && def.id!=='antibody';
+    if(useIllustration){
       const ig=e('g'); def.draw(ig,p.x-18,p.y,14); g.appendChild(ig);
-      // label right of illustration
       def.label.split('\n').forEach((line,i)=>{
         const t=e('text',{x:p.x+8,y:p.y-5+i*13,'text-anchor':'middle','dominant-baseline':'central','font-size':'8','font-weight':'700',fill:col.text,'font-family':'sans-serif'});
         t.textContent=line; g.appendChild(t);
@@ -833,14 +926,14 @@ function cvRenderNodes(){
     // drag handler
     g.addEventListener('mousedown',ev=>{
       if(ev.target.getAttribute('data-connect'))return;
-      ev.stopPropagation(); p.z=cvNextZ++;
+      ev.preventDefault(); ev.stopPropagation(); p.z=cvNextZ++;
       cvDraggingNode=p.id;
       const pt=cvSvgPoint(ev.clientX,ev.clientY);
       cvDragOffset={x:pt.x-p.x,y:pt.y-p.y};
     });
     // connect handler
     dot.addEventListener('mousedown',ev=>{
-      ev.stopPropagation(); cvConnectFrom=p.id;
+      ev.preventDefault(); ev.stopPropagation(); cvConnectFrom=p.id;
       const pt=cvSvgPoint(ev.clientX,ev.clientY);
       cvTempLine=e('line',{x1:p.x,y1:p.y,x2:pt.x,y2:pt.y,stroke:col.stroke,'stroke-width':'1.5','stroke-dasharray':'5 4','marker-end':'url(#cv-arr)'});
       document.getElementById('cv-drag-line').appendChild(cvTempLine);
@@ -1042,6 +1135,9 @@ function svgPt(cx,cy){
   return{x:(cx-r.left)*(680/r.width),y:(cy-r.top)*(300/r.height)};
 }
 
+document.addEventListener('selectstart',ev=>{
+  if(dragging||cvDraggingNode||cvConnectFrom) ev.preventDefault();
+});
 document.addEventListener('mousemove',ev=>{
   if(!dragging)return; moveGhost(ev.clientX,ev.clientY);
   const pt=svgPt(ev.clientX,ev.clientY);
@@ -1109,6 +1205,11 @@ function nextStage(){
 }
 function showComplete(){
   document.getElementById('complete-overlay').classList.add('show');
+  // Mark level complete and unlock canvas tab
+  const prog=loadP(); prog.flu=prog.flu||{};
+  prog.flu.levelComplete=true; saveP(prog);
+  const tab=document.getElementById('tab-canvas');
+  if(tab) tab.textContent='Canvas';
 }
 function closeComplete(){document.getElementById('complete-overlay').classList.remove('show');}
 
@@ -1149,8 +1250,53 @@ function hideFb(){document.getElementById('feedback-bar').classList.remove('show
   if(prog.flu){
     const n=Object.keys(prog.flu).filter(k=>k.startsWith('stage')).length;
     const fill=document.getElementById('prog-flu'); if(fill)fill.style.width=Math.round((n/STAGES.length)*100)+'%';
+    if(prog.flu.levelComplete){
+      const tab=document.getElementById('tab-canvas'); if(tab) tab.textContent='Canvas';
+    }
   }
 })();
+
+/* ── TOUCH SUPPORT ── */
+function touchToMouse(ev,type){
+  const t=ev.touches[0]||ev.changedTouches[0];
+  document.dispatchEvent(new MouseEvent(type,{clientX:t.clientX,clientY:t.clientY,bubbles:true}));
+}
+document.addEventListener('touchmove',ev=>{
+  if(dragging||cvDraggingNode||cvConnectFrom){ev.preventDefault();touchToMouse(ev,'mousemove');}
+},{passive:false});
+document.addEventListener('touchend',ev=>{
+  if(dragging||cvDraggingNode||cvConnectFrom) touchToMouse(ev,'mouseup');
+},{passive:false});
+
+// Story mode chips — touch start
+document.addEventListener('touchstart',ev=>{
+  const chip=ev.target.closest('.cell-chip');
+  if(chip){
+    const id=chip.id.replace('chip-','');
+    const card=document.getElementById('chip-'+id);
+    if(card&&!card.classList.contains('used')){
+      const def=CELL_DEFS[id]; if(!def)return;
+      ev.preventDefault();
+      dragging=id; card.classList.add('dragging');
+      const gh=document.getElementById('drag-ghost');
+      const gs=svgW(62,62); def.draw(gs,31,31,28);
+      gh.innerHTML=''; gh.appendChild(gs); gh.style.display='block';
+      touchToMouse(ev,'mousemove');
+    }
+  }
+  // Canvas chips — touch start
+  const cvChip=ev.target.closest('.canvas-chip');
+  if(cvChip){
+    const id=cvChip.id.replace('cvchip-','');
+    if(!cvPlaced[id]){
+      ev.preventDefault();
+      const def=CV_NODES_DEF.find(n=>n.id===id); if(!def)return;
+      const t=ev.touches[0];
+      const pt=cvSvgPoint(t.clientX,t.clientY);
+      cvPlaceNode(id,pt.x,pt.y);
+    }
+  }
+},{passive:false});
 </script>
 </body>
 </html>
