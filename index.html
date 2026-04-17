@@ -10,43 +10,41 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0f0800;--bg2:#1a0e00;--bg3:#251400;--tissue:#3d1800;--epi:#5c2a00;
+  --bg:#0f0800;--bg2:#1a0e00;--bg3:#251400;--tissue:#3d1800;
   --amber:#D97706;--amber2:#F59E0B;--amber3:#FDE68A;--amber4:#FEF3C7;
-  --red:#DC2626;--red2:#FECACA;--green:#059669;--green2:#6EE7B7;
+  --red:#DC2626;--green:#059669;--green2:#6EE7B7;
   --purple:#7C3AED;--blue:#0369A1;--teal:#0D9488;
   --border:rgba(217,119,6,.18);--border2:rgba(217,119,6,.45);
-  --text:#FEF3C7;--text2:#D97706;--text3:#92400E;--muted:rgba(254,243,199,.42);
+  --text:#FEF3C7;--text3:#92400E;--muted:rgba(254,243,199,.42);
   --radius:12px;
   --font-display:'Fraunces',Georgia,serif;
   --font-body:'DM Sans',sans-serif;
   --font-mono:'DM Mono',monospace;
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);overflow-x:hidden;}
-
 @keyframes spinSlow{to{transform:rotate(360deg)}}
 @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
 @keyframes dashFlow{to{stroke-dashoffset:-20}}
 @keyframes popIn{0%{transform:scale(0);opacity:0}75%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
 @keyframes glow{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 20px 3px rgba(217,119,6,.22)}}
-@keyframes migrate{0%{transform:translateX(0)}100%{transform:translateX(180px)}}
+@keyframes slideR{from{transform:translateX(-60px);opacity:0}to{transform:translateX(0);opacity:1}}
 
 #app{min-height:100vh;display:flex;flex-direction:column;}
 .screen{display:none;flex-direction:column;flex:1;}
 .screen.active{display:flex;}
 
-/* ── TITLE SCREEN ─────────────────────────── */
+/* TITLE */
 #title-screen{align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;position:relative;overflow:hidden;}
 #title-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 40%,rgba(217,119,6,.07) 0%,transparent 70%),radial-gradient(ellipse 40% 60% at 80% 60%,rgba(220,38,38,.05) 0%,transparent 70%);pointer-events:none;}
 #bg-virions{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
-.bg-virion{position:absolute;opacity:.07;animation:floatY linear infinite;}
+.bg-virion{position:absolute;opacity:.07;}
 #title-content{position:relative;z-index:2;text-align:center;animation:fadeUp .8s ease both;max-width:620px;}
 #title-eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;margin-bottom:18px;}
 #title-logo{font-family:var(--font-display);font-size:clamp(52px,10vw,88px);font-weight:300;color:var(--amber4);line-height:1;margin-bottom:6px;letter-spacing:-.02em;}
 #title-logo em{font-style:italic;color:var(--amber2);}
 #title-sub{font-family:var(--font-display);font-size:18px;font-weight:300;font-style:italic;color:var(--muted);margin-bottom:48px;}
-
 #level-select{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;width:100%;max-width:580px;margin:0 auto 36px;}
 .level-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 14px 14px;cursor:pointer;transition:border-color .2s,transform .2s,background .2s;text-align:left;position:relative;overflow:hidden;}
 .level-card:hover:not(.locked){border-color:var(--border2);transform:translateY(-3px);background:var(--bg3);}
@@ -63,7 +61,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .lc-progress-fill{height:100%;background:var(--amber);border-radius:1px;transition:width .5s;}
 #title-footer{font-family:var(--font-mono);font-size:9.5px;color:var(--text3);letter-spacing:.08em;}
 
-/* ── GAME SCREEN ──────────────────────────── */
+/* GAME */
 #game-screen{background:var(--bg);}
 #game-bar{background:var(--bg);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
 #back-btn{font-family:var(--font-mono);font-size:11px;color:var(--text3);background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;cursor:pointer;transition:border-color .15s,color .15s;}
@@ -77,7 +75,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 #gb-stats{display:flex;gap:8px;}
 .gb-stat{font-family:var(--font-mono);font-size:11px;color:var(--amber3);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;}
 
-/* timeline */
 #timeline{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;flex-shrink:0;overflow-x:auto;}
 .tl-step{display:flex;align-items:center;flex-shrink:0;}
 .tl-dot{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;color:var(--text3);flex-shrink:0;transition:all .35s;}
@@ -89,22 +86,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .tl-line{flex:1;height:1px;background:var(--border);margin:0 8px;min-width:20px;transition:background .5s;}
 .tl-line.done{background:var(--green);}
 
-/* scene */
 #game-main{flex:1;display:grid;grid-template-rows:1fr auto auto;min-height:0;}
 #scene-wrap{position:relative;background:var(--tissue);overflow:hidden;min-height:280px;}
 #scene-svg{width:100%;height:100%;display:block;min-height:280px;}
-#feedback-bar{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid var(--amber);border-radius:20px;padding:5px 16px;font-family:var(--font-mono);font-size:11px;color:var(--amber3);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:10;}
+#feedback-bar{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid var(--amber);border-radius:20px;padding:5px 16px;font-family:var(--font-mono);font-size:11px;color:var(--amber3);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:10;max-width:90%;}
 #feedback-bar.show{opacity:1;}
 #drag-ghost{position:absolute;pointer-events:none;z-index:50;display:none;opacity:.88;}
 
-/* narrative */
 #narrative{background:var(--bg2);border-top:1px solid var(--border);padding:12px 18px;display:flex;gap:12px;align-items:flex-start;flex-shrink:0;}
 #narr-day{font-family:var(--font-mono);font-size:9px;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;flex-shrink:0;margin-top:2px;min-width:52px;}
 #narr-body{flex:1;}
 #narr-text{font-size:12px;color:var(--amber3);line-height:1.65;}
 #narr-prompt{font-size:11px;color:var(--amber);margin-top:4px;font-weight:500;}
 
-/* tray */
 #cell-tray{background:var(--bg);border-top:1px solid var(--border);padding:10px 18px 14px;flex-shrink:0;}
 #tray-label{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
 #tray-row{display:flex;gap:8px;flex-wrap:wrap;}
@@ -114,10 +108,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .cell-chip.used{opacity:.2;pointer-events:none;}
 .chip-name{font-family:var(--font-mono);font-size:8px;color:var(--amber3);text-align:center;line-height:1.2;}
 
-/* result overlay */
 #result-overlay{display:none;position:absolute;inset:0;background:rgba(10,4,0,.78);align-items:center;justify-content:center;z-index:30;}
 #result-overlay.show{display:flex;}
-#result-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:28px 32px;text-align:center;max-width:340px;animation:popIn .4s ease;}
+#result-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:28px 32px;text-align:center;max-width:360px;animation:popIn .4s ease;}
 #result-emoji{font-size:30px;margin-bottom:10px;}
 #result-title{font-family:var(--font-display);font-size:21px;font-weight:600;color:var(--amber3);margin-bottom:5px;}
 #result-score{font-family:var(--font-mono);font-size:26px;color:var(--amber2);margin-bottom:10px;}
@@ -126,46 +119,42 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .result-btn:hover{opacity:.85;}
 .result-btn.sec{background:transparent;color:var(--amber3);}
 
-/* stage complete banner */
-#stage-banner{display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(5,150,105,.15);border:1px solid var(--green);border-radius:20px;padding:5px 16px;font-family:var(--font-mono);font-size:11px;color:var(--green2);z-index:10;white-space:nowrap;}
-#stage-banner.show{display:block;}
+/* Level complete screen */
+#complete-overlay{display:none;position:absolute;inset:0;background:rgba(10,4,0,.88);align-items:center;justify-content:center;z-index:40;}
+#complete-overlay.show{display:flex;}
+#complete-card{background:var(--bg2);border:1px solid var(--green);border-radius:var(--radius);padding:36px 40px;text-align:center;max-width:380px;animation:popIn .5s ease;}
+#complete-title{font-family:var(--font-display);font-size:26px;font-weight:600;color:var(--green2);margin-bottom:8px;}
+#complete-sub{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;}
+#complete-score-big{font-family:var(--font-mono);font-size:40px;color:var(--amber2);margin-bottom:4px;}
+#complete-score-label{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:24px;}
+.key-concept{background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:11px;color:var(--green2);text-align:left;font-family:var(--font-mono);}
 </style>
 </head>
 <body>
 <div id="app">
 
-<!-- ══ TITLE SCREEN ═══════════════════════════════════ -->
+<!-- TITLE SCREEN -->
 <div id="title-screen" class="screen active">
   <div id="bg-virions"></div>
   <div id="title-content">
     <div id="title-eyebrow">Interactive immunology · learn by doing</div>
     <div id="title-logo">Immuno<em>cascade</em></div>
     <div id="title-sub">Build the response. Clear the pathogen.</div>
-
     <div id="level-select">
-
       <div class="level-card active-level" onclick="startLevel('flu')">
         <div class="lc-num">LEVEL 01</div>
         <div class="lc-icon">
           <svg width="34" height="34" viewBox="0 0 36 36">
             <g style="animation:spinSlow 10s linear infinite;transform-origin:18px 18px">
               <ellipse cx="18" cy="18" rx="8" ry="6" fill="#FECACA" stroke="#DC2626" stroke-width="1.3"/>
-              <line x1="18" y1="12" x2="18" y2="7" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
-              <polygon points="15,6 18,1 21,6" fill="#B91C1C"/>
-              <line x1="24" y1="14" x2="28" y2="10" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
-              <ellipse cx="29" cy="9" rx="3" ry="2" fill="#991B1B" transform="rotate(45 29 9)"/>
-              <line x1="26" y1="18" x2="31" y2="18" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
-              <polygon points="31,15 36,18 31,21" fill="#B91C1C"/>
-              <line x1="24" y1="22" x2="28" y2="26" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
-              <ellipse cx="29" cy="27" rx="3" ry="2" fill="#991B1B" transform="rotate(-45 29 27)"/>
-              <line x1="18" y1="24" x2="18" y2="29" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
-              <polygon points="15,30 18,35 21,30" fill="#B91C1C"/>
-              <line x1="12" y1="22" x2="8" y2="26" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
-              <ellipse cx="7" cy="27" rx="3" ry="2" fill="#991B1B" transform="rotate(45 7 27)"/>
-              <line x1="10" y1="18" x2="5" y2="18" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
-              <polygon points="5,15 0,18 5,21" fill="#B91C1C"/>
-              <line x1="12" y1="14" x2="8" y2="10" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
-              <ellipse cx="7" cy="9" rx="3" ry="2" fill="#991B1B" transform="rotate(-45 7 9)"/>
+              <line x1="18" y1="12" x2="18" y2="7" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/><polygon points="15,6 18,1 21,6" fill="#B91C1C"/>
+              <line x1="24" y1="14" x2="28" y2="10" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="29" cy="9" rx="3" ry="2" fill="#991B1B" transform="rotate(45 29 9)"/>
+              <line x1="26" y1="18" x2="31" y2="18" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/><polygon points="31,15 36,18 31,21" fill="#B91C1C"/>
+              <line x1="24" y1="22" x2="28" y2="26" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="29" cy="27" rx="3" ry="2" fill="#991B1B" transform="rotate(-45 29 27)"/>
+              <line x1="18" y1="24" x2="18" y2="29" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/><polygon points="15,30 18,35 21,30" fill="#B91C1C"/>
+              <line x1="12" y1="22" x2="8" y2="26" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="7" cy="27" rx="3" ry="2" fill="#991B1B" transform="rotate(45 7 27)"/>
+              <line x1="10" y1="18" x2="5" y2="18" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/><polygon points="5,15 0,18 5,21" fill="#B91C1C"/>
+              <line x1="12" y1="14" x2="8" y2="10" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="7" cy="9" rx="3" ry="2" fill="#991B1B" transform="rotate(-45 7 9)"/>
             </g>
           </svg>
         </div>
@@ -174,47 +163,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
         <div class="lc-badge badge-open">Available</div>
         <div class="lc-progress"><div class="lc-progress-fill" id="prog-flu" style="width:0%"></div></div>
       </div>
-
-      <div class="level-card locked">
-        <div class="lc-num">LEVEL 02</div>
-        <div class="lc-pathogen">Bacterial</div>
-        <div class="lc-desc">Gram+ & Gram−. Opsonization, neutrophil burst.</div>
-        <div class="lc-badge badge-locked">Complete Lv.1</div>
-        <div class="lc-progress"><div class="lc-progress-fill" style="width:0%"></div></div>
-      </div>
-
-      <div class="level-card locked">
-        <div class="lc-num">LEVEL 03</div>
-        <div class="lc-pathogen">COVID-19</div>
-        <div class="lc-desc">IFN suppression. Cytokine storm. ACE2 entry.</div>
-        <div class="lc-badge badge-locked">Complete Lv.2</div>
-        <div class="lc-progress"><div class="lc-progress-fill" style="width:0%"></div></div>
-      </div>
-
-      <div class="level-card locked">
-        <div class="lc-num">LEVEL 04</div>
-        <div class="lc-pathogen">Allergy</div>
-        <div class="lc-desc">IgE, mast cells, type I–IV hypersensitivity.</div>
-        <div class="lc-badge badge-locked">Complete Lv.3</div>
-        <div class="lc-progress"><div class="lc-progress-fill" style="width:0%"></div></div>
-      </div>
-
-      <div class="level-card locked">
-        <div class="lc-num">LEVEL 05</div>
-        <div class="lc-pathogen">Cancer</div>
-        <div class="lc-desc">TME, checkpoint evasion, PD-1/PD-L1, CAR-T.</div>
-        <div class="lc-badge badge-locked">Complete Lv.4</div>
-        <div class="lc-progress"><div class="lc-progress-fill" style="width:0%"></div></div>
-      </div>
-
+      <div class="level-card locked"><div class="lc-num">LEVEL 02</div><div class="lc-pathogen">Bacterial</div><div class="lc-desc">Gram+ & Gram−. Opsonization, neutrophil burst.</div><div class="lc-badge badge-locked">Complete Lv.1</div><div class="lc-progress"><div class="lc-progress-fill" style="width:0%"></div></div></div>
+      <div class="level-card locked"><div class="lc-num">LEVEL 03</div><div class="lc-pathogen">COVID-19</div><div class="lc-desc">IFN suppression. Cytokine storm. ACE2 entry.</div><div class="lc-badge badge-locked">Complete Lv.2</div><div class="lc-progress"><div class="lc-progress-fill" style="width:0%"></div></div></div>
+      <div class="level-card locked"><div class="lc-num">LEVEL 04</div><div class="lc-pathogen">Allergy</div><div class="lc-desc">IgE, mast cells, type I–IV hypersensitivity.</div><div class="lc-badge badge-locked">Complete Lv.3</div><div class="lc-progress"><div class="lc-progress-fill" style="width:0%"></div></div></div>
+      <div class="level-card locked"><div class="lc-num">LEVEL 05</div><div class="lc-pathogen">Cancer</div><div class="lc-desc">TME, checkpoint evasion, PD-1/PD-L1, CAR-T.</div><div class="lc-badge badge-locked">Complete Lv.4</div><div class="lc-progress"><div class="lc-progress-fill" style="width:0%"></div></div></div>
     </div>
     <div id="title-footer">immunocascade &nbsp;·&nbsp; interactive immunology</div>
   </div>
 </div>
 
-<!-- ══ GAME SCREEN ════════════════════════════════════ -->
+<!-- GAME SCREEN -->
 <div id="game-screen" class="screen">
-
   <div id="game-bar">
     <button id="back-btn" onclick="goHome()">← Levels</button>
     <div id="game-title-bar">
@@ -222,8 +181,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
       <div id="gb-name">Level 1 — Influenza</div>
     </div>
     <div id="mode-tabs">
-      <button class="mode-tab active" id="tab-story" onclick="setMode('story',this)">Story</button>
-      <button class="mode-tab" id="tab-canvas" onclick="setMode('canvas',this)">Canvas</button>
+      <button class="mode-tab active" onclick="setMode('story',this)">Story</button>
+      <button class="mode-tab" onclick="setMode('canvas',this)">Canvas</button>
     </div>
     <div id="gb-stats">
       <div class="gb-stat">Day <span id="day-display">0</span></div>
@@ -238,36 +197,46 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
     <div class="tl-line" id="tl-line-1"></div>
     <div class="tl-step"><div class="tl-dot" id="tl-2">3</div><div class="tl-label" id="tll-2">DC to<br>lymph node</div></div>
     <div class="tl-line" id="tl-line-2"></div>
-    <div class="tl-step"><div class="tl-dot" id="tl-3">4</div><div class="tl-label" id="tll-3">Adaptive<br>priming</div></div>
+    <div class="tl-step"><div class="tl-dot" id="tl-3">4</div><div class="tl-label" id="tll-3">B cell &amp;<br>antibody</div></div>
     <div class="tl-line" id="tl-line-3"></div>
-    <div class="tl-step"><div class="tl-dot" id="tl-4">5</div><div class="tl-label" id="tll-4">Viral<br>clearance</div></div>
+    <div class="tl-step"><div class="tl-dot" id="tl-4">5</div><div class="tl-label" id="tll-4">Clearance<br>&amp; memory</div></div>
   </div>
 
   <div id="game-main">
     <div id="scene-wrap">
       <svg id="scene-svg" viewBox="0 0 680 300" preserveAspectRatio="xMidYMid slice">
         <defs>
-          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-            <path d="M2 2L8 5L2 8" fill="none" stroke="#D97706" stroke-width="1.5"/>
-          </marker>
-          <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-            <path d="M2 2L8 5L2 8" fill="none" stroke="#059669" stroke-width="1.5"/>
-          </marker>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 2L8 5L2 8" fill="none" stroke="#D97706" stroke-width="1.5"/></marker>
+          <marker id="arr-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 2L8 5L2 8" fill="none" stroke="#059669" stroke-width="1.5"/></marker>
+          <marker id="arr-p" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 2L8 5L2 8" fill="none" stroke="#7C3AED" stroke-width="1.5"/></marker>
+          <marker id="arr-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 2L8 5L2 8" fill="none" stroke="#DC2626" stroke-width="1.5"/></marker>
         </defs>
         <g id="scene-root"></g>
       </svg>
       <div id="feedback-bar">Drag a cell into the scene to begin</div>
       <div id="drag-ghost"></div>
-      <div id="stage-banner"></div>
       <div id="result-overlay">
         <div id="result-card">
           <div id="result-emoji">🧬</div>
           <div id="result-title">Stage complete</div>
           <div id="result-score">+30</div>
-          <div id="result-msg">The innate response is engaged.</div>
-          <div>
-            <button class="result-btn sec" onclick="closeResult()">Review</button>
-            <button class="result-btn" id="next-btn" onclick="nextStage()">Next stage →</button>
+          <div id="result-msg"></div>
+          <div><button class="result-btn sec" onclick="closeResult()">Review</button><button class="result-btn" id="next-btn" onclick="nextStage()">Next stage →</button></div>
+        </div>
+      </div>
+      <div id="complete-overlay">
+        <div id="complete-card">
+          <div id="complete-title">Level 1 Complete</div>
+          <div id="complete-score-big" id="c-score">0</div>
+          <div id="complete-score-label">total score</div>
+          <div id="complete-sub">You've traced the complete influenza immune response — from viral entry to long-lived memory.</div>
+          <div class="key-concept">TLR7 → IRF3/NF-κB → IFN-α/β + pro-inflammatory cytokines</div>
+          <div class="key-concept">DC CCR7↑ → afferent lymphatics → T cell zone priming</div>
+          <div class="key-concept">CD40L:CD40 → B cell CSR → IgG neutralizing antibodies</div>
+          <div class="key-concept">CD8+ CTL → perforin/granzyme → viral clearance + Tcm/Tem memory</div>
+          <div style="margin-top:20px;">
+            <button class="result-btn sec" onclick="closeComplete()">Review</button>
+            <button class="result-btn" onclick="goHome()">← Level select</button>
           </div>
         </div>
       </div>
@@ -288,19 +257,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
   </div>
 </div>
 
-</div><!-- #app -->
-
+</div>
 <script>
-/* ─────────────────────────────────────────────────
-   SVG HELPERS
-───────────────────────────────────────────────── */
 const NS='http://www.w3.org/2000/svg';
 function e(tag,a={}){const el=document.createElementNS(NS,tag);Object.entries(a).forEach(([k,v])=>el.setAttribute(k,v));return el;}
-function svgWrap(w,h){const s=e('svg');s.setAttribute('width',w);s.setAttribute('height',h);s.setAttribute('viewBox',`0 0 ${w} ${h}`);return s;}
+function svgW(w,h){const s=e('svg');s.setAttribute('width',w);s.setAttribute('height',h);s.setAttribute('viewBox',`0 0 ${w} ${h}`);return s;}
 
-/* ─────────────────────────────────────────────────
-   CELL DRAW FUNCTIONS
-───────────────────────────────────────────────── */
+/* CELL DRAW FUNCTIONS */
 function drawMacrophage(g,cx,cy,s){
   const pts=[];for(let i=0;i<20;i++){const a=(i/20)*Math.PI*2,r=s*(.38+.1*Math.sin(i*2.1+.8));pts.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r]);}
   g.appendChild(e('path',{d:'M'+pts.map(p=>p.join(',')).join('L')+'Z',fill:'#FDE68A',stroke:'#D97706','stroke-width':'1.6','stroke-linejoin':'round'}));
@@ -311,14 +274,11 @@ function drawNK(g,cx,cy,s){
   g.appendChild(e('circle',{cx,cy,r:s*.36,fill:'#FED7AA',stroke:'#EA580C','stroke-width':'1.6'}));
   g.appendChild(e('ellipse',{cx:cx-s*.06,cy,rx:s*.13,ry:s*.18,fill:'#7C2D12',opacity:'.5'}));
   for(let i=0;i<6;i++){const a=(i/6)*Math.PI*2;g.appendChild(e('circle',{cx:cx+Math.cos(a)*s*.2,cy:cy+Math.sin(a)*s*.2,r:s*.04,fill:'#C2410C',opacity:'.65'}));}
-  const bx=cx+s*.36,by=cy;
-  g.appendChild(e('path',{d:`M${bx-s*.04},${by-s*.15} L${bx+s*.07},${by-s*.02} L${bx},${by-s*.02} L${bx+s*.06},${by+s*.14} L${bx-s*.07},${by+s*.01} L${bx},${by+s*.01} Z`,fill:'#EA580C',opacity:'.9'}));
+  g.appendChild(e('path',{d:`M${cx+s*.32},${cy-s*.15} L${cx+s*.43},${cy-s*.02} L${cx+s*.36},${cy-s*.02} L${cx+s*.42},${cy+s*.14} L${cx+s*.31},${cy+s*.01} L${cx+s*.36},${cy+s*.01} Z`,fill:'#EA580C',opacity:'.9'}));
 }
 function drawDendritic(g,cx,cy,s){
-  const arms=[[0,-1],[.64,-.77],[.98,-.2],[.77,.64],[.2,.98],[-.64,.77],[-.98,.2],[-.77,-.64],[-.2,-.98]];
-  arms.forEach(([ax,ay],i)=>{
-    const tr=s*(.42+.1*(i%3-.5)*.4);
-    const x1=cx+ax*s*.18,y1=cy+ay*s*.18,x2=cx+ax*tr,y2=cy+ay*tr;
+  [[0,-1],[.64,-.77],[.98,-.2],[.77,.64],[.2,.98],[-.64,.77],[-.98,.2],[-.77,-.64],[-.2,-.98]].forEach(([ax,ay],i)=>{
+    const tr=s*(.42+.1*(i%3-.5)*.4),x1=cx+ax*s*.18,y1=cy+ay*s*.18,x2=cx+ax*tr,y2=cy+ay*tr;
     const mx=cx+ax*tr*.55+ay*s*.04,my=cy+ay*tr*.55-ax*s*.04;
     g.appendChild(e('path',{d:`M${x1},${y1} Q${mx},${my} ${x2},${y2}`,fill:'none',stroke:'#F59E0B','stroke-width':i%2===0?'3.5':'2.5','stroke-linecap':'round',opacity:'.75'}));
     g.appendChild(e('circle',{cx:x2,cy:y2,r:s*.04,fill:'#B45309'}));
@@ -330,277 +290,299 @@ function drawCD4(g,cx,cy,s){
   g.appendChild(e('circle',{cx,cy,r:s*.35,fill:'#A5B4FC',stroke:'#3730A3','stroke-width':'1.8'}));
   g.appendChild(e('circle',{cx,cy,r:s*.18,fill:'#312E81',opacity:'.6'}));
   [[-s*.35,0],[-s*.25,-s*.24],[-s*.25,s*.24],[0,-s*.35]].forEach(([dx,dy])=>{
-    const a=Math.atan2(dy,dx);
-    const x1=cx+Math.cos(a)*s*.35,y1=cy+Math.sin(a)*s*.35;
-    const x2=cx+Math.cos(a)*s*.5,y2=cy+Math.sin(a)*s*.5;
+    const a=Math.atan2(dy,dx),x1=cx+Math.cos(a)*s*.35,y1=cy+Math.sin(a)*s*.35,x2=cx+Math.cos(a)*s*.5,y2=cy+Math.sin(a)*s*.5;
     g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#4338CA','stroke-width':'1.5','stroke-linecap':'round'}));
     g.appendChild(e('line',{x1:x2,y1:y2,x2:x2+Math.cos(a+.7)*s*.1,y2:y2+Math.sin(a+.7)*s*.1,stroke:'#3730A3','stroke-width':'1.2','stroke-linecap':'round'}));
     g.appendChild(e('line',{x1:x2,y1:y2,x2:x2+Math.cos(a-.7)*s*.1,y2:y2+Math.sin(a-.7)*s*.1,stroke:'#3730A3','stroke-width':'1.2','stroke-linecap':'round'}));
   });
-  const lbl=e('text',{x:cx,y:cy,fill:'#E0E7FF','text-anchor':'middle','dominant-baseline':'central','font-size':s*.22,'font-weight':'700','font-family':'sans-serif'});
-  lbl.textContent='4'; g.appendChild(lbl);
+  const l=e('text',{x:cx,y:cy,fill:'#E0E7FF','text-anchor':'middle','dominant-baseline':'central','font-size':s*.22,'font-weight':'700','font-family':'sans-serif'});l.textContent='4';g.appendChild(l);
 }
 function drawCD8(g,cx,cy,s){
   g.appendChild(e('circle',{cx,cy,r:s*.35,fill:'#C4B5FD',stroke:'#6D28D9','stroke-width':'1.8'}));
   g.appendChild(e('circle',{cx,cy,r:s*.18,fill:'#4C1D95',opacity:'.65'}));
   [[s*.35,0],[s*.25,-s*.24],[s*.25,s*.24]].forEach(([dx,dy])=>{
-    const a=Math.atan2(dy,dx);
-    const x1=cx+Math.cos(a)*s*.35,y1=cy+Math.sin(a)*s*.35;
-    const x2=cx+Math.cos(a)*s*.5,y2=cy+Math.sin(a)*s*.5;
+    const a=Math.atan2(dy,dx),x1=cx+Math.cos(a)*s*.35,y1=cy+Math.sin(a)*s*.35,x2=cx+Math.cos(a)*s*.5,y2=cy+Math.sin(a)*s*.5;
     g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#6D28D9','stroke-width':'1.5','stroke-linecap':'round'}));
     g.appendChild(e('line',{x1:x2,y1:y2,x2:x2+Math.cos(a+.8)*s*.09,y2:y2+Math.sin(a+.8)*s*.09,stroke:'#5B21B6','stroke-width':'1.2','stroke-linecap':'round'}));
     g.appendChild(e('line',{x1:x2,y1:y2,x2:x2+Math.cos(a-.8)*s*.09,y2:y2+Math.sin(a-.8)*s*.09,stroke:'#5B21B6','stroke-width':'1.2','stroke-linecap':'round'}));
   });
-  const lbl=e('text',{x:cx,y:cy,fill:'#EDE9FE','text-anchor':'middle','dominant-baseline':'central','font-size':s*.22,'font-weight':'700','font-family':'sans-serif'});
-  lbl.textContent='8'; g.appendChild(lbl);
+  const l=e('text',{x:cx,y:cy,fill:'#EDE9FE','text-anchor':'middle','dominant-baseline':'central','font-size':s*.22,'font-weight':'700','font-family':'sans-serif'});l.textContent='8';g.appendChild(l);
 }
 function drawBcell(g,cx,cy,s){
   g.appendChild(e('circle',{cx,cy,r:s*.35,fill:'#BAE6FD',stroke:'#0369A1','stroke-width':'1.8'}));
   g.appendChild(e('ellipse',{cx:cx+s*.04,cy:cy-s*.03,rx:s*.17,ry:s*.14,fill:'#0C4A6E',opacity:'.55'}));
   for(let i=0;i<6;i++){
-    const a=(i/6)*Math.PI*2,x1=cx+Math.cos(a)*s*.35,y1=cy+Math.sin(a)*s*.35;
-    const x2=cx+Math.cos(a)*s*.5,y2=cy+Math.sin(a)*s*.5;
+    const a=(i/6)*Math.PI*2,x1=cx+Math.cos(a)*s*.35,y1=cy+Math.sin(a)*s*.35,x2=cx+Math.cos(a)*s*.5,y2=cy+Math.sin(a)*s*.5;
     g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#0284C7','stroke-width':'1.3','stroke-linecap':'round'}));
     g.appendChild(e('line',{x1:x2,y1:y2,x2:x2+Math.cos(a+.75)*s*.08,y2:y2+Math.sin(a+.75)*s*.08,stroke:'#075985','stroke-width':'1','stroke-linecap':'round'}));
     g.appendChild(e('line',{x1:x2,y1:y2,x2:x2+Math.cos(a-.75)*s*.08,y2:y2+Math.sin(a-.75)*s*.08,stroke:'#075985','stroke-width':'1','stroke-linecap':'round'}));
   }
 }
+function drawPlasma(g,cx,cy,s){
+  g.appendChild(e('ellipse',{cx,cy:cy+s*.04,rx:s*.28,ry:s*.36,fill:'#DDD6FE',stroke:'#6D28D9','stroke-width':'1.8'}));
+  const nc=cx-s*.07,ny=cy-s*.1;
+  g.appendChild(e('circle',{cx:nc,cy:ny,r:s*.14,fill:'#EDE9FE',stroke:'#4C1D95','stroke-width':'1'}));
+  for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2;g.appendChild(e('circle',{cx:nc+Math.cos(a)*s*.1,cy:ny+Math.sin(a)*s*.1,r:s*.028,fill:'#4C1D95',opacity:'.8'}));}
+  for(let i=0;i<3;i++){g.appendChild(e('path',{d:`M${cx-s*.2},${cy+s*(.05+i*.1)} Q${cx},${cy+s*(.02+i*.1)} ${cx+s*.18},${cy+s*(.05+i*.1)}`,fill:'none',stroke:'#8B5CF6','stroke-width':'1',opacity:'.5'}));}
+}
+function drawMemory(g,cx,cy,s){
+  const ring=e('circle',{cx,cy,r:s*.44,fill:'none',stroke:'#10B981','stroke-width':'1','stroke-dasharray':`${s*.1} ${s*.07}`,opacity:'.55'});
+  ring.style.animation='spinSlow 12s linear infinite'; ring.style.transformOrigin=`${cx}px ${cy}px`;
+  g.appendChild(ring);
+  g.appendChild(e('circle',{cx,cy,r:s*.33,fill:'#A7F3D0',stroke:'#059669','stroke-width':'1.8'}));
+  g.appendChild(e('circle',{cx,cy,r:s*.15,fill:'#064E3B',opacity:'.6'}));
+  const l=e('text',{x:cx,y:cy,fill:'#ECFDF5','text-anchor':'middle','dominant-baseline':'central','font-size':s*.2,'font-weight':'700','font-family':'sans-serif'});l.textContent='M';g.appendChild(l);
+}
+function drawAntibody(g,cx,cy,s){
+  const hy=cy+s*.05,ft=hy;
+  g.appendChild(e('rect',{x:cx-s*.07,y:ft,width:s*.14,height:s*.38,rx:s*.07,fill:'#6EE7B7',stroke:'#047857','stroke-width':'1.5'}));
+  g.appendChild(e('rect',{x:cx-s*.04,y:ft-s*.05,width:s*.08,height:s*.1,rx:s*.03,fill:'#065F46',opacity:'.8'}));
+  [-1,1].forEach(side=>{
+    const ang=side*.68,al=s*.36,ex=cx+Math.sin(ang)*al,ey=hy-Math.cos(ang)*al*.82;
+    const mx=cx+Math.sin(ang)*al*.4,my=hy-al*.14;
+    const arm=e('path',{d:`M${cx},${hy} Q${mx},${my} ${ex},${ey}`,fill:'none',stroke:'#34D399','stroke-width':s*.09,'stroke-linecap':'round'});
+    g.appendChild(arm);
+    g.appendChild(e('rect',{x:ex-s*.08,y:ey-s*.1,width:s*.16,height:s*.12,rx:s*.03,fill:'#059669',opacity:'.9'}));
+    g.appendChild(e('rect',{x:ex-s*.065,y:ey-s*.095,width:s*.13,height:s*.06,rx:s*.02,fill:'#ECFDF5',opacity:'.7'}));
+  });
+}
 
-const DRAW_FNS = {macrophage:drawMacrophage,nkcell:drawNK,dendritic:drawDendritic,cd4:drawCD4,cd8:drawCD8,bcell:drawBcell};
+const CELL_DEFS={
+  macrophage:{label:'Macrophage',draw:drawMacrophage},
+  nkcell:{label:'NK cell',draw:drawNK},
+  dendritic:{label:'Dendritic cell',draw:drawDendritic},
+  cd4:{label:'CD4+ T cell',draw:drawCD4},
+  cd8:{label:'CD8+ T cell',draw:drawCD8},
+  bcell:{label:'B cell',draw:drawBcell},
+  plasma:{label:'Plasma cell',draw:drawPlasma},
+  memory:{label:'Memory cell',draw:drawMemory},
+  antibody:{label:'IgG antibody',draw:drawAntibody},
+};
 
-/* ─────────────────────────────────────────────────
-   STAGE DEFINITIONS
-───────────────────────────────────────────────── */
-const STAGES = [
-  /* ── Stage 0: Infection site ── */
+/* SCENE BUILDERS */
+function baseEpithelium(root){
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#3d1800'}));
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:48,fill:'#2a0f00',opacity:'.65'}));
+  txt(root,'AIRWAY LUMEN',14,15,'7.5','#5c2400');
+  root.appendChild(e('rect',{x:0,y:228,width:680,height:72,fill:'#5c2a00'}));
+  root.appendChild(e('rect',{x:0,y:226,width:680,height:4,fill:'#7a3500'}));
+  txt(root,'RESPIRATORY EPITHELIUM',14,221,'7.5','#7a3500');
+  [85,175,265,355,445,535,625].forEach(x=>root.appendChild(e('line',{x1:x,y1:230,x2:x,y2:300,stroke:'#6b2c00','stroke-width':'1',opacity:'.7'})));
+  [42,130,220,310,400,490,580].forEach(cx=>root.appendChild(e('ellipse',{cx,cy:262,rx:24,ry:14,fill:'#7a3500',opacity:'.65'})));
+  root.appendChild(e('rect',{x:598,y:0,width:82,height:120,fill:'#4a1515',opacity:'.9'}));
+  root.appendChild(e('line',{x1:598,y1:0,x2:598,y2:120,stroke:'#6b2020','stroke-width':'2.5'}));
+  txt(root,'BLOOD',639,14,'7.5','#6b2020','middle');
+}
+function txt(p,str,x,y,fs,fill,anchor='start'){
+  const t=e('text',{x,y,'font-size':fs,fill,'font-family':"'DM Mono',monospace",'font-weight':'500','letter-spacing':'.07em'});
+  if(anchor!=='start')t.setAttribute('text-anchor',anchor);
+  t.textContent=str; p.appendChild(t); return t;
+}
+function virusGrp(cx,cy,rx,ry,dur,rev){
+  const g=e('g'); g.style.animation=`spinSlow ${dur}s linear infinite${rev?' reverse':''}`; g.style.transformOrigin=`${cx}px ${cy}px`;
+  g.appendChild(e('ellipse',{cx,cy,rx,ry,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.8'}));
+  g.appendChild(e('ellipse',{cx,cy,rx:rx*.38,ry:ry*.38,fill:'#FEE2E2',stroke:'#DC2626','stroke-width':'.8',opacity:'.7'}));
+  [[0,-1],[.71,-.71],[1,0],[.71,.71],[0,1],[-.71,.71],[-1,0],[-.71,-.71]].forEach(([ax,ay],i)=>{
+    const x1=cx+ax*rx,y1=cy+ay*ry,x2=cx+ax*(rx+12),y2=cy+ay*(ry+10);
+    g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#DC2626','stroke-width':'1.4','stroke-linecap':'round'}));
+    if(i%2===0){g.appendChild(e('polygon',{points:`${x2-3*ay},${y2+3*ax} ${x2+4*ax},${y2+4*ay} ${x2+3*ay},${y2-3*ax}`,fill:'#B91C1C'}));}
+    else{g.appendChild(e('ellipse',{cx:x2,cy:y2,rx:4,ry:2.5,fill:'#991B1B',transform:`rotate(${Math.atan2(ay,ax)*180/Math.PI} ${x2} ${y2})`}));}
+  });
+  return g;
+}
+function dashArrow(root,d,stroke,marker){
+  const p=e('path',{d,fill:'none',stroke,'stroke-width':'1.1','stroke-dasharray':'5 3','marker-end':`url(#${marker})`,opacity:'.55'});
+  p.style.animation='dashFlow 2s linear infinite'; root.appendChild(p); return p;
+}
+
+function buildStage0(root){
+  baseEpithelium(root);
+  root.appendChild(virusGrp(155,98,24,18,12,false));
+  root.appendChild(virusGrp(295,55,16,12,18,true));
+  const vi=e('g'); vi.style.animation='floatY 2.5s ease-in-out infinite'; vi.style.transformOrigin='430px 198px';
+  vi.appendChild(e('ellipse',{cx:430,cy:198,rx:14,ry:10,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.3',opacity:'.9'}));
+  vi.appendChild(e('line',{x1:430,y1:208,x2:430,y2:227,stroke:'#DC2626','stroke-width':'1','stroke-dasharray':'3 2',fill:'none',opacity:'.55'}));
+  txt(vi,'entry via HA',430,194,'7.5','#FCA5A5','middle'); root.appendChild(vi);
+  dashArrow(root,'M172 108 Q220 130 248 195','#D97706','arr');
+  txt(root,'TLR7 → NF-κB',210,147,'7.5','#92400E').setAttribute('transform','rotate(-57 210 147)');
+}
+
+function buildStage1(root){
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#1a0f2e'}));
+  root.appendChild(e('rect',{x:0,y:0,width:200,height:300,fill:'#2d1200',opacity:'.9'}));
+  txt(root,'TISSUE',14,18,'7.5','#5c2400');
+  root.appendChild(e('rect',{x:195,y:80,width:110,height:140,rx:55,fill:'rgba(13,148,136,.08)',stroke:'#0D9488','stroke-width':'1.5','stroke-dasharray':'6 4'}));
+  txt(root,'AFFERENT LYMPHATIC',250,74,'7.5','#0D9488','middle');
+  root.appendChild(e('ellipse',{cx:530,cy:150,rx:110,ry:105,fill:'rgba(124,58,237,.06)',stroke:'#7C3AED','stroke-width':'1.5','stroke-dasharray':'6 4'}));
+  txt(root,'LYMPH NODE',530,58,'8','#7C3AED','middle');
+  txt(root,'T CELL ZONE',530,76,'7','rgba(124,58,237,.6)','middle');
+  for(let i=0;i<8;i++){const d=e('circle',{cx:250,cy:100+i*18,r:2.5,fill:'#0D9488',opacity:((i/8*.5)+.1).toFixed(2)});d.style.animation=`pulse ${1.5+i*.2}s ease-in-out infinite`;root.appendChild(d);}
+  [480,545,590].forEach((cx,i)=>{const tg=e('g');tg.appendChild(e('circle',{cx,cy:130+i*20,r:10,fill:'#A5B4FC',stroke:'#3730A3','stroke-width':'1',opacity:'.5'}));tg.appendChild(e('circle',{cx,cy:130+i*20,r:5,fill:'#312E81',opacity:'.4'}));root.appendChild(tg);});
+  txt(root,'naïve T cells',565,188,'7.5','rgba(124,58,237,.5)','middle');
+  const dcG=e('g'); dcG.style.animation='floatY 3s ease-in-out infinite'; dcG.style.transformOrigin='90px 150px';
+  drawDendritic(dcG,90,150,28); txt(dcG,'immature DC',90,188,'8','#FDE68A','middle'); root.appendChild(dcG);
+  txt(root,'CCL19/CCL21 ↑',250,232,'7.5','#0D9488','middle');
+}
+
+function buildStage2(root){
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#170d2e'}));
+  root.appendChild(e('ellipse',{cx:340,cy:150,rx:310,ry:135,fill:'rgba(124,58,237,.05)',stroke:'#7C3AED','stroke-width':'1','stroke-dasharray':'5 4',opacity:'.5'}));
+  txt(root,'LYMPH NODE — T CELL ZONE',340,24,'8','rgba(124,58,237,.55)','middle');
+  const dcG=e('g'); dcG.style.animation='floatY 4s ease-in-out infinite'; dcG.style.transformOrigin='340px 148px';
+  drawDendritic(dcG,340,148,34); txt(dcG,'MHC-I & MHC-II',340,196,'8','#FDE68A','middle'); txt(dcG,'CD80/86↑  CCR7↑',340,207,'7.5','#92400E','middle'); root.appendChild(dcG);
+  const a1=e('path',{d:'M310 148 Q255 153 242 153',fill:'none',stroke:'#4338CA','stroke-width':'1.2','stroke-dasharray':'5 3','marker-end':'url(#arr-p)',opacity:'.6'});
+  a1.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(a1);
+  const a2=e('path',{d:'M370 148 Q425 153 438 153',fill:'none',stroke:'#6D28D9','stroke-width':'1.2','stroke-dasharray':'5 3','marker-end':'url(#arr-p)',opacity:'.6'});
+  a2.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(a2);
+  txt(root,'MHC-II',242,118,'7.5','rgba(67,56,202,.7)','middle');
+  txt(root,'MHC-I',438,118,'7.5','rgba(109,40,217,.7)','middle');
+  txt(root,'Signal 1: TCR/MHC  ·  Signal 2: CD28/CD80  ·  Signal 3: IL-12',340,262,'8','rgba(217,119,6,.45)','middle');
+}
+
+function buildStage3(root){
+  // Germinal center / B cell zone
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#0a1020'}));
+  root.appendChild(e('ellipse',{cx:340,cy:150,rx:310,ry:135,fill:'rgba(3,105,161,.05)',stroke:'#0369A1','stroke-width':'1','stroke-dasharray':'5 4',opacity:'.5'}));
+  txt(root,'LYMPH NODE — B CELL FOLLICLE / GERMINAL CENTER',340,22,'7.5','rgba(3,105,161,.55)','middle');
+  // GC dark zone
+  root.appendChild(e('ellipse',{cx:230,cy:155,rx:95,ry:80,fill:'rgba(3,105,161,.07)',stroke:'#0369A1','stroke-width':'1','stroke-dasharray':'4 3',opacity:'.7'}));
+  txt(root,'DARK ZONE',230,82,'7.5','rgba(3,105,161,.5)','middle');
+  txt(root,'SHM / AID↑',230,94,'7','rgba(3,105,161,.4)','middle');
+  // GC light zone
+  root.appendChild(e('ellipse',{cx:460,cy:155,rx:95,ry:80,fill:'rgba(5,150,105,.06)',stroke:'#059669','stroke-width':'1','stroke-dasharray':'4 3',opacity:'.7'}));
+  txt(root,'LIGHT ZONE',460,82,'7.5','rgba(5,150,105,.5)','middle');
+  txt(root,'FDC antigen display',460,94,'7','rgba(5,150,105,.4)','middle');
+  // Tfh cell floating
+  const tfh=e('g'); tfh.style.animation='floatY 4s ease-in-out infinite'; tfh.style.transformOrigin='340px 148px';
+  drawCD4(tfh,340,148,28); txt(tfh,'Tfh',340,186,'8','#A5B4FC','middle'); txt(tfh,'CD40L↑  CXCR5↑',340,196,'7','rgba(165,180,252,.6)','middle'); root.appendChild(tfh);
+  // CD40L → CD40 arrow down
+  const acd=e('path',{d:'M340 178 Q340 200 340 210',fill:'none',stroke:'#4338CA','stroke-width':'1.1','stroke-dasharray':'4 3','marker-end':'url(#arr-p)',opacity:'.55'});
+  acd.style.animation='dashFlow 1.6s linear infinite'; root.appendChild(acd);
+  txt(root,'CD40L:CD40',340,220,'7.5','rgba(67,56,202,.55)','middle');
+  txt(root,'→ CSR to IgG',340,230,'7','rgba(67,56,202,.45)','middle');
+  // IFNγ label from left
+  const ia=e('path',{d:'M80 148 Q180 148 230 148',fill:'none',stroke:'#EA580C','stroke-width':'1','stroke-dasharray':'4 3','marker-end':'url(#arr)',opacity:'.4'});
+  ia.style.animation='dashFlow 2s linear infinite'; root.appendChild(ia);
+  txt(root,'IFN-γ (Th1)',60,144,'7.5','rgba(234,88,12,.5)');
+}
+
+function buildStage4(root){
+  baseEpithelium(root);
+  // mostly cleared — faint virion remnants
+  const vf=e('g'); vf.style.opacity='.25';
+  vf.appendChild(e('ellipse',{cx:160,cy:90,rx:16,ry:12,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.2'}));
+  vf.appendChild(e('ellipse',{cx:300,cy:55,rx:10,ry:7,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1',opacity:'.6'}));
+  root.appendChild(vf);
+  // CTL killing arrow
+  const ka=e('path',{d:'M370 130 Q320 110 250 95',fill:'none',stroke:'#DC2626','stroke-width':'1.1','stroke-dasharray':'4 3','marker-end':'url(#arr-r)',opacity:'.55'});
+  ka.style.animation='dashFlow 1.5s linear infinite'; root.appendChild(ka);
+  txt(root,'CTL killing',290,110,'7.5','rgba(220,38,38,.55)','middle');
+  txt(root,'perforin / granzyme B',290,121,'7','rgba(220,38,38,.4)','middle');
+  // antibody neutralization arrows
+  const na=e('path',{d:'M500 100 Q430 80 320 60',fill:'none',stroke:'#059669','stroke-width':'1.1','stroke-dasharray':'4 3','marker-end':'url(#arr-g)',opacity:'.55'});
+  na.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(na);
+  txt(root,'IgG neutralization',430,88,'7.5','rgba(5,150,105,.55)','middle');
+  // clearance label
+  txt(root,'VIRAL CLEARANCE — Day 7–10',340,22,'8','rgba(5,150,105,.5)','middle');
+  // IFN-γ antiviral state
+  txt(root,'IFN-γ antiviral state maintained',340,36,'7','rgba(217,119,6,.4)','middle');
+}
+
+/* STAGES */
+const STAGES=[
   {
-    id:'s0', tlIndex:0, day:'Day 0', dayNum:'0',
+    id:'s0',tlIndex:0,day:'Day 0',dayNum:'0',
     narr:'Influenza virions bind sialic acid receptors via hemagglutinin (HA) and enter airway epithelial cells. Endosomal ssRNA activates <strong style="color:#F59E0B">TLR7 → IRF3/NF-κB</strong>, triggering IFN-α/β release and upregulation of MHC-I on neighboring cells.',
     prompt:'→ Drag the correct innate cells into the infection zone.',
-    buildScene(root){ buildStage0Scene(root); },
+    buildScene:buildStage0,
     trayIds:['macrophage','nkcell','bcell','cd8'],
     dropZones:[
-      {id:'dz-macro',cx:360,cy:165,r:44,accepts:['macrophage'],correctMsg:'✓ Macrophage — TLR detection → NF-κB → TNF-α, IL-1β, IL-6, IL-12'},
-      {id:'dz-nk',   cx:510,cy:148,r:36,accepts:['nkcell'],    correctMsg:'✓ NK cell — "missing self" → perforin/granzyme + IFN-γ'},
+      {id:'dz-m',cx:360,cy:165,r:44,accepts:['macrophage'],correctMsg:'✓ Macrophage — TLR detection → NF-κB → TNF-α, IL-1β, IL-6, IL-12'},
+      {id:'dz-n',cx:510,cy:148,r:36,accepts:['nkcell'],correctMsg:'✓ NK cell — "missing self" → perforin/granzyme + IFN-γ'},
     ],
     wrongMsgs:{bcell:'✗ Too early — B cells are adaptive (day 5–7)',cd8:'✗ CD8+ T cells need APC priming first'},
-    resultEmoji:'🦠', resultTitle:'Innate response engaged',
+    resultEmoji:'🦠',resultTitle:'Innate response engaged',
     resultMsg:'Macrophages and NK cells are active at the infection site. IFN-γ from NK cells amplifies the antiviral state. Dendritic cells are sampling antigen and beginning to mature.',
   },
-  /* ── Stage 1: DC migration ── */
   {
-    id:'s1', tlIndex:1, day:'Day 1–3', dayNum:'1–3',
-    narr:'Tissue-resident dendritic cells have phagocytosed viral debris and are maturing. They upregulate <strong style="color:#F59E0B">CCR7</strong> (downregulating CCR1/5) and begin migrating via afferent lymphatics toward the lymph node T cell zone, guided by CCL19/CCL21 gradients.',
-    prompt:'→ Drag the mature dendritic cell into the afferent lymphatic to begin migration.',
-    buildScene(root){ buildStage1Scene(root); },
+    id:'s1',tlIndex:1,day:'Day 1–3',dayNum:'1–3',
+    narr:'Tissue-resident dendritic cells have phagocytosed viral debris and are maturing. They upregulate <strong style="color:#F59E0B">CCR7</strong> (downregulating CCR1/5) and migrate via afferent lymphatics toward the lymph node T cell zone, guided by CCL19/CCL21.',
+    prompt:'→ Drag the mature dendritic cell into the afferent lymphatic.',
+    buildScene:buildStage1,
     trayIds:['dendritic','macrophage','bcell'],
     dropZones:[
       {id:'dz-dc',cx:380,cy:145,r:44,accepts:['dendritic'],correctMsg:'✓ DC upregulates CCR7 → migrates via CCL19/CCL21 gradient to T cell zone'},
     ],
-    wrongMsgs:{macrophage:'✗ Macrophages remain at infection site — DCs are the migratory APC',bcell:'✗ B cells home to B cell follicles, not afferent lymphatics'},
-    resultEmoji:'🔬', resultTitle:'DC migrating to lymph node',
-    resultMsg:'The mature dendritic cell is travelling via afferent lymphatics, carrying peptide-MHC complexes. In the lymph node T cell zone it will present antigen to naïve CD4+ and CD8+ T cells, initiating the adaptive immune response.',
+    wrongMsgs:{macrophage:'✗ Macrophages are tissue-resident — DCs are the migratory APC',bcell:'✗ B cells home to follicles, not afferent lymphatics'},
+    resultEmoji:'🔬',resultTitle:'DC migrating to lymph node',
+    resultMsg:'The mature DC carries peptide-MHC complexes via afferent lymphatics to the T cell zone, where it will prime naïve T cells to initiate the adaptive response.',
   },
-  /* ── Stage 2: T cell priming ── */
   {
-    id:'s2', tlIndex:2, day:'Day 3–5', dayNum:'3–5',
-    narr:'The DC arrives in the lymph node T cell zone. MHC-II/peptide engages naïve <strong style="color:#F59E0B">CD4+ TCR</strong> (signal 1). CD80/86 on DC binds CD28 on T cell (signal 2). IL-12 provides signal 3. Meanwhile, MHC-I cross-presentation activates CD8+ T cells via the same co-stimulatory signals.',
-    prompt:'→ Drag both T cell types to the dendritic cell to initiate priming.',
-    buildScene(root){ buildStage2Scene(root); },
+    id:'s2',tlIndex:2,day:'Day 3–5',dayNum:'3–5',
+    narr:'The DC arrives in the lymph node T cell zone. <strong style="color:#F59E0B">Signal 1</strong>: TCR binds MHC/peptide. <strong style="color:#F59E0B">Signal 2</strong>: CD28 binds CD80/86. <strong style="color:#F59E0B">Signal 3</strong>: IL-12. MHC-I cross-presentation activates CD8+ CTLs. CD4+ Tfh cells upregulate CXCR5 and migrate to B cell follicles.',
+    prompt:'→ Drag CD4+ and CD8+ T cells to the dendritic cell to initiate priming.',
+    buildScene:buildStage2,
     trayIds:['cd4','cd8','bcell','macrophage'],
     dropZones:[
-      {id:'dz-cd4',cx:290,cy:155,r:40,accepts:['cd4'],correctMsg:'✓ CD4+ TCR binds MHC-II/peptide + CD28:CD80 co-stim → IL-2 autocrine loop → proliferation'},
-      {id:'dz-cd8',cx:430,cy:155,r:40,accepts:['cd8'],correctMsg:'✓ CD8+ TCR binds MHC-I/peptide (cross-presentation) → CTL effector differentiation'},
+      {id:'dz-cd4',cx:242,cy:153,r:40,accepts:['cd4'],correctMsg:'✓ CD4+ TCR:MHC-II + CD28:CD80 → IL-2 autocrine → Th1 / Tfh differentiation'},
+      {id:'dz-cd8',cx:438,cy:153,r:40,accepts:['cd8'],correctMsg:'✓ CD8+ TCR:MHC-I (cross-presentation) → CTL effector: perforin, granzyme, FasL'},
     ],
-    wrongMsgs:{bcell:'✗ B cell activation occurs in follicles — not direct DC contact here',macrophage:'✗ Macrophages present antigen but are not the primary T cell priming APC in the lymph node'},
-    resultEmoji:'⚡', resultTitle:'Adaptive response primed',
-    resultMsg:'CD4+ Th cells are proliferating via IL-2 autocrine signalling. CD8+ CTLs are differentiating into effector cells. The adaptive immune response is now armed — viral clearance is underway.',
+    wrongMsgs:{bcell:'✗ B cell activation is in follicles — not direct DC contact here',macrophage:'✗ Macrophages are not the primary priming APC in the lymph node T cell zone'},
+    resultEmoji:'⚡',resultTitle:'Adaptive response primed',
+    resultMsg:'CD4+ Th cells are proliferating via IL-2 autocrine signalling. CD8+ CTLs are differentiating. Tfh cells upregulate CXCR5 and move toward the B cell follicle to license B cell activation.',
+  },
+  {
+    id:'s3',tlIndex:3,day:'Day 5–7',dayNum:'5–7',
+    narr:'Tfh cells enter the B cell follicle and provide <strong style="color:#F59E0B">CD40L:CD40</strong> co-stimulation + IL-21/IL-4. This drives B cell class switch recombination (CSR) to IgG and somatic hypermutation (SHM) in the germinal center dark zone. High-affinity B cell clones are selected in the light zone by follicular DCs.',
+    prompt:'→ Drag the B cell into the germinal center to initiate antibody production.',
+    buildScene:buildStage3,
+    trayIds:['bcell','cd8','plasma','macrophage'],
+    dropZones:[
+      {id:'dz-bc',cx:230,cy:155,r:55,accepts:['bcell'],correctMsg:'✓ B cell enters GC → AID-driven SHM + CSR → affinity maturation → IgG'},
+    ],
+    wrongMsgs:{cd8:'✗ CD8+ CTLs act at the infection site, not in GC reactions',plasma:'✗ Plasma cells are the output of GC — they form after B cell activation',macrophage:'✗ Macrophages are not GC participants'},
+    resultEmoji:'💉',resultTitle:'Germinal center reaction',
+    resultMsg:'B cells undergo AID-driven somatic hypermutation and class switch recombination. High-affinity IgG-secreting plasma cells form. Long-lived plasma cells migrate to bone marrow niches. Memory B cells are established.',
+  },
+  {
+    id:'s4',tlIndex:4,day:'Day 7–14',dayNum:'7–14',
+    narr:'CD8+ CTLs recognize viral peptide/MHC-I on infected cells and kill via <strong style="color:#F59E0B">perforin/granzyme B</strong> and FasL. Neutralizing IgG antibodies block HA binding and opsonize virions for phagocytosis. After clearance, >90% of effector cells undergo apoptosis. Long-lived <strong style="color:#F59E0B">Tcm and Tem memory cells</strong> persist.',
+    prompt:'→ Drag the memory cell and antibody into the scene to complete the response.',
+    buildScene:buildStage4,
+    trayIds:['memory','antibody','cd8','bcell'],
+    dropZones:[
+      {id:'dz-mem',cx:530,cy:155,r:44,accepts:['memory'],correctMsg:'✓ Memory T cells — Tcm (CCR7+) and Tem (CCR7−) persist for years'},
+      {id:'dz-ab', cx:370,cy:148,r:40,accepts:['antibody'],correctMsg:'✓ IgG antibodies neutralize HA, fix complement, opsonize for phagocytosis'},
+    ],
+    wrongMsgs:{cd8:'✗ Effector CD8+ cells are contracting — memory is what persists',bcell:'✗ Drag the antibody (secreted product) rather than the B cell itself'},
+    resultEmoji:'🏆',resultTitle:'Viral clearance complete',
+    resultMsg:'The influenza virus has been cleared. Immunological memory is established. Upon re-exposure, memory T and B cells will mount a faster, stronger secondary response — the basis of vaccine protection.',
   },
 ];
 
-/* ─────────────────────────────────────────────────
-   TRAY CELL CATALOGUE
-───────────────────────────────────────────────── */
-const CELL_DEFS = {
-  macrophage:{label:'Macrophage',draw:drawMacrophage},
-  nkcell:    {label:'NK cell',   draw:drawNK},
-  dendritic: {label:'Dendritic cell',draw:drawDendritic},
-  cd4:       {label:'CD4+ T cell',draw:drawCD4},
-  cd8:       {label:'CD8+ T cell',draw:drawCD8},
-  bcell:     {label:'B cell',    draw:drawBcell},
-};
+/* PROGRESS */
+const SAVE='immunocascade_v1';
+function loadP(){try{return JSON.parse(localStorage.getItem(SAVE))||{};}catch{return{};}}
+function saveP(d){localStorage.setItem(SAVE,JSON.stringify(d));}
 
-/* ─────────────────────────────────────────────────
-   SCENE BUILDERS
-───────────────────────────────────────────────── */
-function buildStage0Scene(root){
-  // tissue background
-  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#3d1800'}));
-  root.appendChild(e('rect',{x:0,y:0,width:680,height:48,fill:'#2a0f00',opacity:'.65'}));
-  root.appendChild(e('text',{x:14,y:15,'font-size':'7.5',fill:'#5c2400','font-family':"'DM Mono',monospace",'font-weight':'500','letter-spacing':'.08em'})).textContent='AIRWAY LUMEN';
-  // epithelium
-  root.appendChild(e('rect',{x:0,y:228,width:680,height:72,fill:'#5c2a00'}));
-  root.appendChild(e('rect',{x:0,y:226,width:680,height:4,fill:'#7a3500'}));
-  root.appendChild(e('text',{x:14,y:221,'font-size':'7.5',fill:'#7a3500','font-family':"'DM Mono',monospace",'font-weight':'500','letter-spacing':'.08em'})).textContent='RESPIRATORY EPITHELIUM';
-  [85,175,265,355,445,535,625].forEach(x=>{
-    root.appendChild(e('line',{x1:x,y1:230,x2:x,y2:300,stroke:'#6b2c00','stroke-width':'1',opacity:'.7'}));
-  });
-  [42,130,220,310,400,490,580].forEach(cx=>{
-    root.appendChild(e('ellipse',{cx,cy:262,rx:24,ry:14,fill:'#7a3500',opacity:'.65'}));
-  });
-  // blood vessel
-  root.appendChild(e('rect',{x:598,y:0,width:82,height:120,fill:'#4a1515',opacity:'.9'}));
-  root.appendChild(e('line',{x1:598,y1:0,x2:598,y2:120,stroke:'#6b2020','stroke-width':'2.5'}));
-  root.appendChild(e('text',{x:639,y:14,'font-size':'7.5',fill:'#6b2020','font-family':"'DM Mono',monospace",'text-anchor':'middle','letter-spacing':'.06em'})).textContent='BLOOD';
-  // virus 1
-  const v1=e('g'); v1.style.animation='spinSlow 12s linear infinite'; v1.style.transformOrigin='155px 98px';
-  v1.appendChild(e('ellipse',{cx:155,cy:98,rx:24,ry:18,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.8'}));
-  v1.appendChild(e('ellipse',{cx:155,cy:98,rx:9,ry:7,fill:'#FEE2E2',stroke:'#DC2626','stroke-width':'.8',opacity:'.7'}));
-  [[0,-1],[.71,-.71],[1,0],[.71,.71],[0,1],[-.71,.71],[-1,0],[-.71,-.71]].forEach(([ax,ay],i)=>{
-    const x1=155+ax*22,y1=98+ay*18,x2=155+ax*34,y2=98+ay*28;
-    v1.appendChild(e('line',{x1,y1,x2,y2,stroke:'#DC2626','stroke-width':'1.4','stroke-linecap':'round'}));
-    if(i%2===0){v1.appendChild(e('polygon',{points:`${x2-3*ay},${y2+3*ax} ${x2+4*ax},${y2+4*ay} ${x2+3*ay},${y2-3*ax}`,fill:'#B91C1C'}));}
-    else{v1.appendChild(e('ellipse',{cx:x2,cy:y2,rx:4,ry:2.5,fill:'#991B1B',transform:`rotate(${Math.atan2(ay,ax)*180/Math.PI} ${x2} ${y2})`}));}
-  });
-  root.appendChild(v1);
-  // virus 2 small
-  const v2=e('g'); v2.style.animation='spinSlow 18s linear infinite reverse'; v2.style.transformOrigin='295px 55px';
-  v2.appendChild(e('ellipse',{cx:295,cy:55,rx:16,ry:12,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.4'}));
-  [[0,-1],[.71,-.71],[1,0],[.71,.71],[0,1],[-.71,.71],[-1,0],[-.71,-.71]].forEach(([ax,ay],i)=>{
-    const x1=295+ax*15,y1=55+ay*12,x2=295+ax*23,y2=55+ay*19;
-    v2.appendChild(e('line',{x1,y1,x2,y2,stroke:'#DC2626','stroke-width':'1.2','stroke-linecap':'round'}));
-    if(i%2===0){v2.appendChild(e('polygon',{points:`${x2-2*ay},${y2+2*ax} ${x2+3*ax},${y2+3*ay} ${x2+2*ay},${y2-2*ax}`,fill:'#B91C1C'}));}
-    else{v2.appendChild(e('ellipse',{cx:x2,cy:y2,rx:3,ry:2,fill:'#991B1B',transform:`rotate(${Math.atan2(ay,ax)*180/Math.PI} ${x2} ${y2})`}));}
-  });
-  root.appendChild(v2);
-  // infecting virion
-  const vInf=e('g'); vInf.style.animation='floatY 2.5s ease-in-out infinite'; vInf.style.transformOrigin='430px 198px';
-  vInf.appendChild(e('ellipse',{cx:430,cy:198,rx:14,ry:10,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.3',opacity:'.9'}));
-  vInf.appendChild(e('line',{x1:430,y1:208,x2:430,y2:227,stroke:'#DC2626','stroke-width':'1','stroke-dasharray':'3 2',fill:'none',opacity:'.55'}));
-  const inf_lbl=e('text',{x:430,y:194,'text-anchor':'middle','font-size':'7.5',fill:'#FCA5A5','font-family':"'DM Mono',monospace"});
-  inf_lbl.textContent='entry via HA'; vInf.appendChild(inf_lbl);
-  root.appendChild(vInf);
-  // TLR7 signal
-  const sigPath=e('path',{d:'M172 108 Q220 130 248 195',fill:'none',stroke:'#D97706','stroke-width':'1.1','stroke-dasharray':'5 3','marker-end':'url(#arr)',opacity:'.5'});
-  sigPath.style.animation='dashFlow 2s linear infinite';
-  root.appendChild(sigPath);
-  const sigLbl=e('text',{x:210,y:147,'font-size':'7.5',fill:'#92400E','font-family':"'DM Mono',monospace",transform:'rotate(-57 210 147)'});
-  sigLbl.textContent='TLR7 → NF-κB'; root.appendChild(sigLbl);
-  // drop zones built separately by game engine
-}
+let stageIdx=0,score=0,placed={},dzMet={},dragging=null;
 
-function buildStage1Scene(root){
-  // lymphatic vessel environment
-  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#1a0f2e'}));
-  // tissue left side
-  root.appendChild(e('rect',{x:0,y:0,width:200,height:300,fill:'#2d1200',opacity:'.9'}));
-  root.appendChild(e('text',{x:14,y:18,'font-size':'7.5',fill:'#5c2400','font-family':"'DM Mono',monospace",'letter-spacing':'.08em'})).textContent='TISSUE';
-  // afferent lymphatic vessel (center channel)
-  root.appendChild(e('rect',{x:195,y:80,width:110,height:140,rx:55,fill:'rgba(13,148,136,.08)',stroke:'#0D9488','stroke-width':'1.5','stroke-dasharray':'6 4'}));
-  root.appendChild(e('text',{x:250,y:74,'font-size':'7.5',fill:'#0D9488','font-family':"'DM Mono',monospace",'text-anchor':'middle','letter-spacing':'.06em'})).textContent='AFFERENT LYMPHATIC';
-  // lymph node right
-  root.appendChild(e('ellipse',{cx:530,cy:150,rx:110,ry:105,fill:'rgba(124,58,237,.06)',stroke:'#7C3AED','stroke-width':'1.5','stroke-dasharray':'6 4'}));
-  root.appendChild(e('text',{x:530,y:58,'font-size':'8',fill:'#7C3AED','font-family':"'DM Mono',monospace",'text-anchor':'middle','letter-spacing':'.06em'})).textContent='LYMPH NODE';
-  // T cell zone label inside LN
-  root.appendChild(e('text',{x:530,y:76,'font-size':'7',fill:'rgba(124,58,237,.6)','font-family':"'DM Mono',monospace",'text-anchor':'middle'})).textContent='T CELL ZONE';
-  // CCL19/21 gradient dots in lymphatic
-  for(let i=0;i<8;i++){
-    const cy2=100+i*18;
-    const dot=e('circle',{cx:250,cy:cy2,r:2.5,fill:'#0D9488',opacity:(i/8*.5+.1).toFixed(2)});
-    dot.style.animation=`pulse ${1.5+i*.2}s ease-in-out infinite`;
-    root.appendChild(dot);
-  }
-  // naïve T cells waiting in LN
-  [480,545,590].forEach((cx,i)=>{
-    const tg=e('g');
-    tg.appendChild(e('circle',{cx,cy:130+i*20,r:10,fill:'#A5B4FC',stroke:'#3730A3','stroke-width':'1',opacity:'.5'}));
-    tg.appendChild(e('circle',{cx,cy:130+i*20,r:5,fill:'#312E81',opacity:'.4'}));
-    root.appendChild(tg);
-  });
-  root.appendChild(e('text',{x:565,y:188,'font-size':'7.5',fill:'rgba(124,58,237,.5)','font-family':"'DM Mono',monospace",'text-anchor':'middle'})).textContent='naïve T cells';
-  // immature DC in tissue
-  const dcG=e('g'); dcG.style.animation='floatY 3s ease-in-out infinite'; dcG.style.transformOrigin='90px 150px';
-  drawDendritic(dcG,90,150,28);
-  const dcLbl=e('text',{x:90,y:188,'text-anchor':'middle','font-size':'8',fill:'#FDE68A','font-family':"'DM Mono',monospace"});
-  dcLbl.textContent='immature DC'; dcG.appendChild(dcLbl);
-  root.appendChild(dcG);
-  // CCL19 label
-  root.appendChild(e('text',{x:250,y:232,'font-size':'7.5',fill:'#0D9488','font-family':"'DM Mono',monospace",'text-anchor':'middle'})).textContent='CCL19/CCL21 ↑';
-}
-
-function buildStage2Scene(root){
-  // lymph node interior
-  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#170d2e'}));
-  root.appendChild(e('ellipse',{cx:340,cy:150,rx:310,ry:135,fill:'rgba(124,58,237,.05)',stroke:'#7C3AED','stroke-width':'1','stroke-dasharray':'5 4',opacity:'.5'}));
-  root.appendChild(e('text',{x:340,y:24,'font-size':'8',fill:'rgba(124,58,237,.55)','font-family':"'DM Mono',monospace",'text-anchor':'middle','letter-spacing':'.08em'})).textContent='LYMPH NODE — T CELL ZONE';
-  // DC in center
-  const dcG=e('g'); dcG.style.animation='floatY 4s ease-in-out infinite'; dcG.style.transformOrigin='340px 150px';
-  drawDendritic(dcG,340,150,34);
-  // MHC labels on DC
-  const mhc1=e('text',{x:340,y:198,'text-anchor':'middle','font-size':'8',fill:'#FDE68A','font-family':"'DM Mono',monospace"});
-  mhc1.textContent='MHC-I & MHC-II'; dcG.appendChild(mhc1);
-  const mhc2=e('text',{x:340,y:208,'text-anchor':'middle','font-size':'7',fill:'#92400E','font-family':"'DM Mono',monospace"});
-  mhc2.textContent='CD80/86 ↑ CCR7 ↑'; dcG.appendChild(mhc2);
-  root.appendChild(dcG);
-  // signal arrows from DC to drop zones
-  const a1=e('path',{d:'M310 150 Q250 155 240 155',fill:'none',stroke:'#4338CA','stroke-width':'1.2','stroke-dasharray':'5 3','marker-end':'url(#arr)',opacity:'.6'});
-  a1.style.animation='dashFlow 1.8s linear infinite';
-  root.appendChild(a1);
-  const a2=e('path',{d:'M370 150 Q420 155 430 155',fill:'none',stroke:'#6D28D9','stroke-width':'1.2','stroke-dasharray':'5 3','marker-end':'url(#arr)',opacity:'.6'});
-  a2.style.animation='dashFlow 1.8s linear infinite';
-  root.appendChild(a2);
-  root.appendChild(e('text',{x:240,y:115,'font-size':'7.5',fill:'rgba(67,56,202,.7)','font-family':"'DM Mono',monospace",'text-anchor':'middle'})).textContent='MHC-II';
-  root.appendChild(e('text',{x:430,y:115,'font-size':'7.5',fill:'rgba(109,40,217,.7)','font-family':"'DM Mono',monospace",'text-anchor':'middle'})).textContent='MHC-I';
-  // signal 2 label
-  root.appendChild(e('text',{x:340,y:260,'font-size':'8',fill:'rgba(217,119,6,.5)','font-family':"'DM Mono',monospace",'text-anchor':'middle'})).textContent='Signal 1: TCR/MHC · Signal 2: CD28/CD80 · Signal 3: IL-12';
-}
-
-/* ─────────────────────────────────────────────────
-   GAME STATE
-───────────────────────────────────────────────── */
-const SAVE_KEY='immunocascade_v1';
-function loadProg(){try{return JSON.parse(localStorage.getItem(SAVE_KEY))||{};}catch{return{};}}
-function saveProg(d){localStorage.setItem(SAVE_KEY,JSON.stringify(d));}
-
-let currentStageIdx=0;
-let score=0;
-let placed={};
-let dzMet={};
-let dragging=null;
-
-/* ─────────────────────────────────────────────────
-   NAVIGATION
-───────────────────────────────────────────────── */
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function goHome(){showScreen('title-screen');}
 function startLevel(id){if(id!=='flu')return;resetGame();showScreen('game-screen');}
 function setMode(m,btn){document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');}
 
-/* ─────────────────────────────────────────────────
-   GAME INIT / RESET
-───────────────────────────────────────────────── */
 function resetGame(){
-  score=0;currentStageIdx=0;placed={};dzMet={};dragging=null;
+  score=0;stageIdx=0;placed={};dzMet={};dragging=null;
   document.getElementById('score-display').textContent='0';
   document.getElementById('day-display').textContent='0';
   document.getElementById('result-overlay').classList.remove('show');
-  document.getElementById('stage-banner').classList.remove('show');
-  hideFeedback();
-  resetTimeline();
-  loadStage(0);
+  document.getElementById('complete-overlay').classList.remove('show');
+  hideFb();resetTL();loadStage(0);
 }
-
-function resetTimeline(){
-  for(let i=0;i<5;i++){
-    document.getElementById('tl-'+i)?.classList.remove('active','done');
-    document.getElementById('tll-'+i)?.classList.remove('active','done');
-    if(i<4)document.getElementById('tl-line-'+i)?.classList.remove('done');
-  }
-}
-
+function resetTL(){for(let i=0;i<5;i++){document.getElementById('tl-'+i)?.classList.remove('active','done');document.getElementById('tll-'+i)?.classList.remove('active','done');if(i<4)document.getElementById('tl-line-'+i)?.classList.remove('done');}}
 function loadStage(idx){
-  currentStageIdx=idx;
-  placed={};dzMet={};
+  stageIdx=idx;placed={};dzMet={};
   const st=STAGES[idx];
   document.getElementById('narr-day').textContent=st.day;
   document.getElementById('narr-text').innerHTML=st.narr;
@@ -608,42 +590,27 @@ function loadStage(idx){
   document.getElementById('day-display').textContent=st.dayNum;
   document.getElementById('tl-'+st.tlIndex).classList.add('active');
   document.getElementById('tll-'+st.tlIndex).classList.add('active');
-  buildScene(st);
-  buildTray(st);
+  buildScene(st); buildTray(st);
 }
 
-/* ─────────────────────────────────────────────────
-   SCENE
-───────────────────────────────────────────────── */
 function buildScene(st){
   const root=document.getElementById('scene-root');
-  root.innerHTML='';
-  st.buildScene(root);
-  // placed layer
+  root.innerHTML=''; st.buildScene(root);
   const pl=e('g'); pl.id='placed-layer'; root.appendChild(pl);
-  // drop zones
   st.dropZones.forEach(dz=>{
     const g=e('g'); g.id=dz.id;
     g.appendChild(e('circle',{cx:dz.cx,cy:dz.cy,r:dz.r,fill:'rgba(61,24,0,.45)',stroke:'#D97706','stroke-width':'2','stroke-dasharray':'8 5'}));
-    const t1=e('text',{x:dz.cx,y:dz.cy-4,'text-anchor':'middle','font-size':'10',fill:'#D97706','font-family':"'DM Mono',monospace",'font-weight':'500'});
-    t1.textContent='Drop here'; g.appendChild(t1);
-    const t2=e('text',{x:dz.cx,y:dz.cy+10,'text-anchor':'middle','font-size':'8',fill:'#92400E','font-family':"'DM Sans',sans-serif"});
-    t2.textContent=dz.accepts.join(' or ')+' ?'; g.appendChild(t2);
+    const t1=e('text',{x:dz.cx,y:dz.cy-6,'text-anchor':'middle','font-size':'10',fill:'#D97706','font-family':"'DM Mono',monospace",'font-weight':'500'});t1.textContent='Drop here';g.appendChild(t1);
+    const t2=e('text',{x:dz.cx,y:dz.cy+9,'text-anchor':'middle','font-size':'8',fill:'#92400E','font-family':"'DM Sans',sans-serif"});t2.textContent=dz.accepts.join('/')+' ?';g.appendChild(t2);
     root.appendChild(g);
   });
 }
-
-/* ─────────────────────────────────────────────────
-   TRAY
-───────────────────────────────────────────────── */
 function buildTray(st){
-  const row=document.getElementById('tray-row');
-  row.innerHTML='';
+  const row=document.getElementById('tray-row'); row.innerHTML='';
   st.trayIds.forEach(id=>{
-    const def=CELL_DEFS[id]; if(!def) return;
-    const card=document.createElement('div');
-    card.className='cell-chip'; card.id='chip-'+id;
-    const svg=svgWrap(52,52); def.draw(svg,26,26,23);
+    const def=CELL_DEFS[id]; if(!def)return;
+    const card=document.createElement('div'); card.className='cell-chip'; card.id='chip-'+id;
+    const svg=svgW(52,52); def.draw(svg,26,26,23);
     const nm=document.createElement('div'); nm.className='chip-name'; nm.textContent=def.label;
     card.appendChild(svg); card.appendChild(nm);
     card.addEventListener('mousedown',ev=>startDrag(ev,id,card));
@@ -651,44 +618,31 @@ function buildTray(st){
   });
 }
 
-/* ─────────────────────────────────────────────────
-   DRAG & DROP
-───────────────────────────────────────────────── */
 function startDrag(ev,id,card){
-  if(placed[id])return;
-  ev.preventDefault(); dragging=id; card.classList.add('dragging');
-  const def=CELL_DEFS[id];
-  const gs=svgWrap(62,62); def.draw(gs,31,31,28);
-  const ghost=document.getElementById('drag-ghost');
-  ghost.innerHTML=''; ghost.appendChild(gs); ghost.style.display='block';
+  if(placed[id])return; ev.preventDefault(); dragging=id; card.classList.add('dragging');
+  const def=CELL_DEFS[id],gs=svgW(62,62); def.draw(gs,31,31,28);
+  const gh=document.getElementById('drag-ghost'); gh.innerHTML=''; gh.appendChild(gs); gh.style.display='block';
   moveGhost(ev.clientX,ev.clientY);
 }
-
 function moveGhost(cx,cy){
-  const wrap=document.getElementById('scene-wrap');
-  const r=wrap.getBoundingClientRect();
+  const r=document.getElementById('scene-wrap').getBoundingClientRect();
   const gh=document.getElementById('drag-ghost');
-  gh.style.left=(cx-r.left-31)+'px';
-  gh.style.top=(cy-r.top-31)+'px';
+  gh.style.left=(cx-r.left-31)+'px'; gh.style.top=(cy-r.top-31)+'px';
 }
-
-function svgPoint(cx,cy){
-  const svg=document.getElementById('scene-svg');
-  const r=svg.getBoundingClientRect();
+function svgPt(cx,cy){
+  const r=document.getElementById('scene-svg').getBoundingClientRect();
   return{x:(cx-r.left)*(680/r.width),y:(cy-r.top)*(300/r.height)};
 }
 
 document.addEventListener('mousemove',ev=>{
-  if(!dragging)return;
-  moveGhost(ev.clientX,ev.clientY);
-  const pt=svgPoint(ev.clientX,ev.clientY);
-  const st=STAGES[currentStageIdx];
-  st.dropZones.forEach(dz=>{
+  if(!dragging)return; moveGhost(ev.clientX,ev.clientY);
+  const pt=svgPt(ev.clientX,ev.clientY);
+  STAGES[stageIdx].dropZones.forEach(dz=>{
     const g=document.getElementById(dz.id); if(!g||dzMet[dz.id])return;
     const hit=Math.hypot(pt.x-dz.cx,pt.y-dz.cy)<dz.r;
-    const circ=g.querySelector('circle');
-    circ.setAttribute('stroke',hit?'#F59E0B':'#D97706');
-    circ.setAttribute('fill',hit?'rgba(245,158,11,.18)':'rgba(61,24,0,.45)');
+    const c=g.querySelector('circle');
+    c.setAttribute('stroke',hit?'#F59E0B':'#D97706');
+    c.setAttribute('fill',hit?'rgba(245,158,11,.18)':'rgba(61,24,0,.45)');
   });
 });
 
@@ -697,112 +651,78 @@ document.addEventListener('mouseup',ev=>{
   const id=dragging; dragging=null;
   document.getElementById('drag-ghost').style.display='none';
   document.getElementById('chip-'+id)?.classList.remove('dragging');
-  // reset dz colors
-  const st=STAGES[currentStageIdx];
-  st.dropZones.forEach(dz=>{
-    const g=document.getElementById(dz.id); if(!g)return;
-    const c=g.querySelector('circle');
-    c.setAttribute('stroke','#D97706'); c.setAttribute('fill','rgba(61,24,0,.45)');
-  });
+  const st=STAGES[stageIdx];
+  st.dropZones.forEach(dz=>{const g=document.getElementById(dz.id);if(!g)return;const c=g.querySelector('circle');c.setAttribute('stroke','#D97706');c.setAttribute('fill','rgba(61,24,0,.45)');});
   if(placed[id])return;
-
-  const pt=svgPoint(ev.clientX,ev.clientY);
+  const pt=svgPt(ev.clientX,ev.clientY);
   let hitDZ=null;
-  st.dropZones.forEach(dz=>{
-    if(!dzMet[dz.id]&&Math.hypot(pt.x-dz.cx,pt.y-dz.cy)<dz.r) hitDZ=dz;
-  });
-
-  if(!hitDZ){showFeedback('Drop into a highlighted zone','#D97706');return;}
-
+  st.dropZones.forEach(dz=>{if(!dzMet[dz.id]&&Math.hypot(pt.x-dz.cx,pt.y-dz.cy)<dz.r)hitDZ=dz;});
+  if(!hitDZ){showFb('Drop into a highlighted zone','#D97706');return;}
   if(hitDZ.accepts.includes(id)){
-    placed[id]=true; dzMet[hitDZ.id]=true;
-    score+=15; document.getElementById('score-display').textContent=score;
+    placed[id]=true; dzMet[hitDZ.id]=true; score+=15;
+    document.getElementById('score-display').textContent=score;
     document.getElementById('chip-'+id).classList.add('used');
     document.getElementById(hitDZ.id).style.display='none';
-    showFeedback(hitDZ.correctMsg,'#059669');
-    placeCell(id,hitDZ.cx,hitDZ.cy);
-    const allMet=st.dropZones.every(dz=>dzMet[dz.id]);
-    if(allMet) setTimeout(showResult,1600);
+    showFb(hitDZ.correctMsg,'#059669'); placeCell(id,hitDZ.cx,hitDZ.cy);
+    if(st.dropZones.every(dz=>dzMet[dz.id])) setTimeout(showResult,1600);
   } else {
-    const wrong=st.wrongMsgs?.[id]||'✗ This cell type is not active here yet';
-    showFeedback(wrong,'#DC2626');
+    showFb(st.wrongMsgs?.[id]||'✗ This cell type is not active here yet','#DC2626');
   }
 });
 
 function placeCell(id,cx,cy){
-  const layer=document.getElementById('placed-layer');
-  const def=CELL_DEFS[id];
-  const g=e('g'); g.style.animation='popIn .4s ease';
-  def.draw(g,cx,cy,32);
-  const lbl=e('text',{x:cx,y:cy+46,'text-anchor':'middle','font-size':'8.5',fill:'#FDE68A','font-family':"'DM Mono',monospace",'font-weight':'500'});
-  lbl.textContent=def.label; g.appendChild(lbl);
-  layer.appendChild(g);
+  const layer=document.getElementById('placed-layer'),def=CELL_DEFS[id];
+  const g=e('g'); g.style.animation='popIn .4s ease'; def.draw(g,cx,cy,32);
+  const l=e('text',{x:cx,y:cy+46,'text-anchor':'middle','font-size':'8.5',fill:'#FDE68A','font-family':"'DM Mono',monospace",'font-weight':'500'});
+  l.textContent=def.label; g.appendChild(l); layer.appendChild(g);
 }
 
-/* ─────────────────────────────────────────────────
-   RESULT / PROGRESSION
-───────────────────────────────────────────────── */
 function showResult(){
-  const st=STAGES[currentStageIdx];
+  const st=STAGES[stageIdx];
   document.getElementById('result-emoji').textContent=st.resultEmoji;
   document.getElementById('result-title').textContent=st.resultTitle;
   document.getElementById('result-score').textContent='+'+score+' pts';
   document.getElementById('result-msg').textContent=st.resultMsg;
-  const hasNext=currentStageIdx<STAGES.length-1;
-  document.getElementById('next-btn').textContent=hasNext?'Next stage →':'Level complete!';
+  const hasNext=stageIdx<STAGES.length-1;
+  document.getElementById('next-btn').textContent=hasNext?'Next stage →':'See results';
   document.getElementById('result-overlay').classList.add('show');
-  // save progress
-  const prog=loadProg();
-  prog.flu=prog.flu||{};
-  prog.flu['stage'+currentStageIdx]=true;
-  prog.flu.score=Math.max(prog.flu.score||0,score);
-  saveProg(prog);
-  const pct=Math.round(((currentStageIdx+1)/STAGES.length)*100);
-  const fill=document.getElementById('prog-flu');
-  if(fill) fill.style.width=pct+'%';
+  const prog=loadP(); prog.flu=prog.flu||{};
+  prog.flu['stage'+stageIdx]=true; prog.flu.score=Math.max(prog.flu.score||0,score); saveP(prog);
+  const pct=Math.round((Object.keys(prog.flu).filter(k=>k.startsWith('stage')).length/STAGES.length)*100);
+  const fill=document.getElementById('prog-flu'); if(fill)fill.style.width=pct+'%';
 }
-
-function closeResult(){
-  document.getElementById('result-overlay').classList.remove('show');
-}
-
+function closeResult(){document.getElementById('result-overlay').classList.remove('show');}
 function nextStage(){
   document.getElementById('result-overlay').classList.remove('show');
-  const st=STAGES[currentStageIdx];
+  const st=STAGES[stageIdx];
   document.getElementById('tl-'+st.tlIndex).classList.replace('active','done');
   document.getElementById('tll-'+st.tlIndex).classList.replace('active','done');
-  if(st.tlIndex<4) document.getElementById('tl-line-'+st.tlIndex).classList.add('done');
-  if(currentStageIdx<STAGES.length-1){
-    loadStage(currentStageIdx+1);
-  } else {
-    showFeedback('Level 1 complete! More levels coming soon.','#059669');
-  }
+  if(st.tlIndex<4)document.getElementById('tl-line-'+st.tlIndex).classList.add('done');
+  if(stageIdx<STAGES.length-1){loadStage(stageIdx+1);}
+  else{showComplete();}
 }
+function showComplete(){
+  document.getElementById('complete-overlay').classList.add('show');
+  document.getElementById('complete-score-big').textContent=score;
+}
+function closeComplete(){document.getElementById('complete-overlay').classList.remove('show');}
 
-/* ─────────────────────────────────────────────────
-   FEEDBACK
-───────────────────────────────────────────────── */
-let fbTimer=null;
-function showFeedback(msg,color='#FDE68A'){
+let fbT=null;
+function showFb(msg,color='#FDE68A'){
   const fb=document.getElementById('feedback-bar');
-  fb.textContent=msg; fb.style.borderColor=color; fb.style.color=color;
-  fb.classList.add('show');
-  if(fbTimer)clearTimeout(fbTimer);
-  fbTimer=setTimeout(hideFeedback,3000);
+  fb.textContent=msg; fb.style.borderColor=color; fb.style.color=color; fb.classList.add('show');
+  if(fbT)clearTimeout(fbT); fbT=setTimeout(hideFb,3200);
 }
-function hideFeedback(){document.getElementById('feedback-bar').classList.remove('show');}
+function hideFb(){document.getElementById('feedback-bar').classList.remove('show');}
 
-/* ─────────────────────────────────────────────────
-   BG VIRIONS (title screen decoration)
-───────────────────────────────────────────────── */
-(function bgVirions(){
+/* BG VIRIONS */
+(function(){
   const wrap=document.getElementById('bg-virions');
   [[8,12],[22,68],[75,20],[88,55],[14,80],[60,8],[92,30],[45,90],[35,48]].forEach(([lp,tp])=>{
-    const sz=40+Math.random()*55;
-    const svg=document.createElementNS(NS,'svg');
+    const sz=40+Math.random()*55,svg=document.createElementNS(NS,'svg');
     svg.setAttribute('width',sz); svg.setAttribute('height',sz); svg.setAttribute('viewBox','0 0 60 60');
     const g=document.createElementNS(NS,'g');
-    g.style.animation=`spinSlow ${8+Math.random()*10}s linear infinite ${Math.random()>.5?'reverse':''}`;
+    g.style.animation=`spinSlow ${8+Math.random()*10}s linear infinite${Math.random()>.5?' reverse':''}`;
     g.style.transformOrigin='30px 30px';
     g.appendChild(e('ellipse',{cx:30,cy:30,rx:14,ry:11,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.3'}));
     for(let j=0;j<6;j++){
@@ -811,24 +731,19 @@ function hideFeedback(){document.getElementById('feedback-bar').classList.remove
       g.appendChild(e('circle',{cx:30+Math.cos(a)*23,cy:30+Math.sin(a)*23,r:'2.5',fill:'#991B1B'}));
     }
     svg.appendChild(g);
-    const div=document.createElement('div');
-    div.className='bg-virion';
+    const div=document.createElement('div'); div.className='bg-virion';
     div.style.left=lp+'%'; div.style.top=tp+'%';
     div.style.animation=`floatY ${6+Math.random()*8}s ease-in-out infinite ${Math.random()*4}s`;
     div.appendChild(svg); wrap.appendChild(div);
   });
 })();
 
-/* ─────────────────────────────────────────────────
-   INIT — restore saved progress display
-───────────────────────────────────────────────── */
-(function init(){
-  const prog=loadProg();
+/* INIT */
+(function(){
+  const prog=loadP();
   if(prog.flu){
-    const completedStages=STAGES.filter((_,i)=>prog.flu['stage'+i]).length;
-    const pct=Math.round((completedStages/STAGES.length)*100);
-    const fill=document.getElementById('prog-flu');
-    if(fill) fill.style.width=pct+'%';
+    const n=Object.keys(prog.flu).filter(k=>k.startsWith('stage')).length;
+    const fill=document.getElementById('prog-flu'); if(fill)fill.style.width=Math.round((n/STAGES.length)*100)+'%';
   }
 })();
 </script>
