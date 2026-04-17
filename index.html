@@ -150,6 +150,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 #cv-feedback{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid var(--amber);border-radius:20px;padding:5px 16px;font-family:var(--font-mono);font-size:11px;color:var(--amber3);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:10;max-width:85%;}
 #cv-feedback.show{opacity:1;}
 #cv-drag-ghost{position:absolute;pointer-events:none;z-index:50;display:none;opacity:.85;}
+#cv-trash-zone{position:absolute;top:10px;right:10px;width:54px;height:54px;border-radius:12px;background:rgba(220,38,38,.13);border:1.5px dashed rgba(220,38,38,.5);display:none;align-items:center;justify-content:center;flex-direction:column;gap:3px;z-index:20;pointer-events:none;transition:background .15s,border-color .15s;}
+#cv-trash-zone.active{display:flex;}
+#cv-trash-zone.over{background:rgba(220,38,38,.32);border-color:#DC2626;}
+#cv-trash-label{font-family:var(--font-mono);font-size:7.5px;color:#FCA5A5;letter-spacing:.05em;}
 
 #ai-panel{background:var(--bg2);border-top:1px solid var(--border);padding:10px 16px;max-height:120px;overflow-y:auto;flex-shrink:0;font-size:12px;}
 #ai-panel-inner{display:flex;align-items:flex-start;gap:10px;}
@@ -391,9 +395,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
           <g id="cv-nodes"></g>
           <g id="cv-drag-line"></g>
         </svg>
-        <div id="canvas-hint">Drag cells from the right tray onto the canvas.<br>Connect by dragging from the ● on each node to another node.<br>Right-click any connection to remove it.</div>
+        <div id="canvas-hint">Drag cells from the right tray onto the canvas.<br>Connect by dragging from the ● on each node to another node.<br>Right-click any connection to remove it. Drag a node to the 🗑 corner to delete it.</div>
         <div id="cv-feedback"></div>
         <div id="cv-drag-ghost"></div>
+        <div id="cv-trash-zone">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="6" width="16" height="13" rx="2" stroke="#FCA5A5" stroke-width="1.5"/><path d="M1 6h20M8 6V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2" stroke="#FCA5A5" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="10" x2="9" y2="15" stroke="#FCA5A5" stroke-width="1.3" stroke-linecap="round"/><line x1="13" y1="10" x2="13" y2="15" stroke="#FCA5A5" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <div id="cv-trash-label">drop to<br>remove</div>
+        </div>
       </div>
       <div id="canvas-bar">
         <div class="cv-stat">Nodes: <span id="cv-node-count">0</span></div>
@@ -583,6 +591,57 @@ function drawCytokine(g,cx,cy,s){
   g.appendChild(e('circle',{cx,cy,r:s*.08,fill:'#BE185D'}));
 }
 
+function drawNFkB(g,cx,cy,s){
+  // NF-κB: p65/p50 dimer unlocking from IκB — depicted as two interlocked
+  // Rel-homology domain lobes (ovals) with a DNA-binding "foot" below and
+  // a small IκB chain shown detaching (dashed arc, fading)
+  // Two subunit ovals (p65 left, p50 right)
+  const lx=cx-s*.13, rx=cx+s*.13, oy=cy-s*.08;
+  const lobe=s*.2, lobeH=s*.27;
+  g.appendChild(e('ellipse',{cx:lx,cy:oy,rx:lobe,ry:lobeH,fill:'#F97316',stroke:'#C2410C','stroke-width':'1.5'}));
+  g.appendChild(e('ellipse',{cx:rx,cy:oy,rx:lobe,ry:lobeH,fill:'#FB923C',stroke:'#C2410C','stroke-width':'1.5'}));
+  // "p65" and "p50" micro labels
+  const lt=e('text',{x:lx,y:oy,fill:'#7C2D12','text-anchor':'middle','dominant-baseline':'central','font-size':s*.14,'font-weight':'700','font-family':'sans-serif'});lt.textContent='p65';g.appendChild(lt);
+  const rt=e('text',{x:rx,y:oy,fill:'#7C2D12','text-anchor':'middle','dominant-baseline':'central','font-size':s*.14,'font-weight':'700','font-family':'sans-serif'});rt.textContent='p50';g.appendChild(rt);
+  // DNA-binding foot — two curved prongs down to a thick horizontal "DNA" bar
+  const bY=cy+s*.22;
+  g.appendChild(e('line',{x1:lx,y1:oy+lobeH,x2:lx,y2:bY,stroke:'#9A3412','stroke-width':'1.3','stroke-linecap':'round'}));
+  g.appendChild(e('line',{x1:rx,y1:oy+lobeH,x2:rx,y2:bY,stroke:'#9A3412','stroke-width':'1.3','stroke-linecap':'round'}));
+  g.appendChild(e('rect',{x:cx-s*.28,y:bY,width:s*.56,height:s*.08,rx:s*.04,fill:'#1D4ED8',stroke:'#1E40AF','stroke-width':'1'}));
+  // IκB chain detaching — dashed arc to upper-right, fading
+  const ikb=e('path',{d:`M${rx+lobe},${oy-lobeH*.5} Q${cx+s*.45},${cy-s*.45} ${cx+s*.42},${cy-s*.52}`,fill:'none',stroke:'#94A3B8','stroke-width':'1.1','stroke-dasharray':'3 2',opacity:'.65','stroke-linecap':'round'});
+  g.appendChild(ikb);
+  const ik=e('text',{x:cx+s*.44,y:cy-s*.58,fill:'#94A3B8','text-anchor':'middle','font-size':s*.12,'font-family':'sans-serif'});ik.textContent='IκB';g.appendChild(ik);
+}
+
+function drawInfluenza(g,cx,cy,s){
+  // Influenza virion: segmented RNA genome inside, HA + NA surface spikes
+  // Inner body — spherical with genome segments hinted
+  g.appendChild(e('ellipse',{cx,cy,rx:s*.36,ry:s*.32,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.8'}));
+  g.appendChild(e('ellipse',{cx,cy,rx:s*.2,ry:s*.17,fill:'#FEE2E2',stroke:'#DC2626','stroke-width':'.8',opacity:'.7'}));
+  // 8 RNA segments — short curved arcs inside
+  for(let i=0;i<8;i++){
+    const a=(i/8)*Math.PI*2;
+    const x1=cx+Math.cos(a)*s*.05,y1=cy+Math.sin(a)*s*.05;
+    const x2=cx+Math.cos(a)*s*.16,y2=cy+Math.sin(a)*s*.16;
+    g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#991B1B','stroke-width':'1','stroke-linecap':'round',opacity:'.7'}));
+  }
+  // HA spikes (blunt-headed, longer) at cardinal positions
+  [[0],[Math.PI/2],[Math.PI],[Math.PI*1.5]].forEach(([a])=>{
+    const x1=cx+Math.cos(a)*s*.34,y1=cy+Math.sin(a)*s*.3;
+    const x2=cx+Math.cos(a)*s*.52,y2=cy+Math.sin(a)*s*.46;
+    g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#DC2626','stroke-width':'1.4','stroke-linecap':'round'}));
+    g.appendChild(e('circle',{cx:x2,cy:y2,r:s*.06,fill:'#B91C1C'}));
+  });
+  // NA spikes (mushroom-shaped, shorter) at diagonal positions
+  [Math.PI/4,Math.PI*3/4,Math.PI*5/4,Math.PI*7/4].forEach(a=>{
+    const x1=cx+Math.cos(a)*s*.32,y1=cy+Math.sin(a)*s*.28;
+    const x2=cx+Math.cos(a)*s*.47,y2=cy+Math.sin(a)*s*.42;
+    g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#EF4444','stroke-width':'1.1','stroke-linecap':'round'}));
+    g.appendChild(e('ellipse',{cx:x2,cy:y2,rx:s*.06,ry:s*.035,fill:'#991B1B',transform:`rotate(${Math.atan2(Math.sin(a),Math.cos(a))*180/Math.PI+90} ${x2} ${y2})`}));
+  });
+}
+
 const CELL_DEFS={
   macrophage:{label:'Macrophage',draw:drawMacrophage},
   nkcell:{label:'NK cell',draw:drawNK},
@@ -646,62 +705,193 @@ function buildStage0(root){
 }
 
 function buildStage1(root){
-  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#1a0f2e'}));
-  root.appendChild(e('rect',{x:0,y:0,width:200,height:300,fill:'#2d1200',opacity:'.9'}));
-  txt(root,'TISSUE',14,18,'7.5','#5c2400');
-  root.appendChild(e('rect',{x:195,y:80,width:110,height:140,rx:55,fill:'rgba(13,148,136,.08)',stroke:'#0D9488','stroke-width':'1.5','stroke-dasharray':'6 4'}));
-  txt(root,'AFFERENT LYMPHATIC',250,74,'7.5','#0D9488','middle');
-  root.appendChild(e('ellipse',{cx:530,cy:150,rx:110,ry:105,fill:'rgba(124,58,237,.06)',stroke:'#7C3AED','stroke-width':'1.5','stroke-dasharray':'6 4'}));
-  txt(root,'LYMPH NODE',530,58,'8','#7C3AED','middle');
-  txt(root,'T CELL ZONE',530,76,'7','rgba(124,58,237,.6)','middle');
-  for(let i=0;i<8;i++){const d=e('circle',{cx:250,cy:100+i*18,r:2.5,fill:'#0D9488',opacity:((i/8*.5)+.1).toFixed(2)});d.style.animation=`pulse ${1.5+i*.2}s ease-in-out infinite`;root.appendChild(d);}
-  [480,545,590].forEach((cx,i)=>{const tg=e('g');tg.appendChild(e('circle',{cx,cy:130+i*20,r:10,fill:'#A5B4FC',stroke:'#3730A3','stroke-width':'1',opacity:'.5'}));tg.appendChild(e('circle',{cx,cy:130+i*20,r:5,fill:'#312E81',opacity:'.4'}));root.appendChild(tg);});
-  txt(root,'naïve T cells',565,188,'7.5','rgba(124,58,237,.5)','middle');
-  const dcG=e('g'); dcG.style.animation='floatY 3s ease-in-out infinite'; dcG.style.transformOrigin='90px 150px';
-  drawDendritic(dcG,90,150,28); txt(dcG,'immature DC',90,188,'8','#FDE68A','middle'); root.appendChild(dcG);
-  txt(root,'CCL19/CCL21 ↑',250,232,'7.5','#0D9488','middle');
+  // Background: left = infected tissue (warm brown), right = lymph node (cool purple)
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#0e0820'}));
+  root.appendChild(e('rect',{x:0,y:0,width:185,height:300,fill:'#2d1200',opacity:'.95'}));
+  txt(root,'INFECTED TISSUE',14,16,'7','#5c2400');
+
+  // Afferent lymphatic vessel — tapered tube from tissue to lymph node
+  // Drawn as a filled rounded trapezoid path
+  root.appendChild(e('path',{d:'M182 110 Q250 108 310 118 L310 182 Q250 192 182 190 Z',
+    fill:'rgba(13,148,136,.12)',stroke:'#0D9488','stroke-width':'1.8','stroke-dasharray':'6 4'}));
+  txt(root,'AFFERENT LYMPHATIC',246,100,'7','#0D9488','middle');
+  // Flow dots animating along the vessel path
+  for(let i=0;i<5;i++){
+    const d=e('circle',{r:'3',fill:'#0D9488',opacity:'.7'});
+    const anim=e('animateMotion',{dur:`${2.5+i*.4}s`,repeatCount:'indefinite',
+      begin:`${i*.5}s`,path:'M185 150 Q250 148 308 150'});
+    d.appendChild(anim); root.appendChild(d);
+  }
+
+  // Lymph node — large ellipse right side
+  root.appendChild(e('ellipse',{cx:500,cy:152,rx:155,ry:132,fill:'rgba(124,58,237,.07)',stroke:'#7C3AED','stroke-width':'1.8','stroke-dasharray':'7 5'}));
+  txt(root,'LYMPH NODE',500,28,'8.5','rgba(124,58,237,.7)','middle');
+
+  // Paracortex / T cell zone sub-region (upper right inside node)
+  root.appendChild(e('ellipse',{cx:490,cy:130,rx:105,ry:72,fill:'rgba(124,58,237,.09)',stroke:'rgba(124,58,237,.4)','stroke-width':'1','stroke-dasharray':'4 3'}));
+  txt(root,'T CELL ZONE / PARACORTEX',490,62,'7','rgba(165,180,252,.55)','middle');
+
+  // Naive T cells waiting in paracortex — use real drawCD4 / drawCD8 at small scale
+  [[448,100],[492,98],[536,102],[462,138],[504,136],[546,140],[478,118],[520,116]].forEach(([cx,cy],i)=>{
+    const g=e('g'); g.setAttribute('opacity','.55');
+    if(i%2===0) drawCD4(g,cx,cy,14); else drawCD8(g,cx,cy,14);
+    root.appendChild(g);
+  });
+  txt(root,'naïve T cells (quiescent)',490,176,'7.5','rgba(165,180,252,.5)','middle');
+
+  // HEV — high endothelial venule entry (small oval, bottom of node)
+  root.appendChild(e('ellipse',{cx:500,cy:248,rx:38,ry:14,fill:'rgba(220,38,38,.08)',stroke:'#DC2626','stroke-width':'1','stroke-dasharray':'3 2',opacity:'.6'}));
+  txt(root,'HEV entry',500,248,'7','rgba(220,38,38,.5)','middle');
+
+  // Mature DC (left, in tissue — about to enter vessel)
+  const dcG=e('g'); dcG.style.animation='floatY 3.5s ease-in-out infinite'; dcG.style.transformOrigin='95px 148px';
+  drawDendritic(dcG,95,148,26);
+  txt(dcG,'mature DC',95,184,'7.5','#FDE68A','middle');
+  txt(dcG,'CCR7↑',95,194,'7','#92400E','middle');
+  root.appendChild(dcG);
+
+  // Arrow from DC into vessel
+  const mArrow=e('path',{d:'M124 148 Q155 148 178 148',fill:'none',stroke:'#D97706','stroke-width':'1.3','stroke-dasharray':'5 3','marker-end':'url(#arr)',opacity:'.7'});
+  mArrow.style.animation='dashFlow 1.5s linear infinite'; root.appendChild(mArrow);
+
+  // CCL19/CCL21 gradient label
+  txt(root,'CCL19 / CCL21 gradient →',246,260,'7','rgba(13,148,136,.65)','middle');
+
+  // Drop zone label hint (where the DC should be dragged)
+  root.appendChild(e('ellipse',{cx:380,cy:150,rx:44,ry:44,fill:'rgba(217,119,6,.04)',stroke:'rgba(217,119,6,.25)','stroke-width':'1.2','stroke-dasharray':'4 3'}));
+  txt(root,'drop zone',380,218,'7','rgba(217,119,6,.35)','middle');
 }
 
 function buildStage2(root){
-  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#170d2e'}));
-  root.appendChild(e('ellipse',{cx:340,cy:150,rx:310,ry:135,fill:'rgba(124,58,237,.05)',stroke:'#7C3AED','stroke-width':'1','stroke-dasharray':'5 4',opacity:'.5'}));
-  txt(root,'LYMPH NODE — T CELL ZONE',340,24,'8','rgba(124,58,237,.55)','middle');
+  // Paracortex of lymph node — deep purple
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#110b28'}));
+  // Outer node boundary hint
+  root.appendChild(e('ellipse',{cx:340,cy:152,rx:326,ry:140,fill:'none',stroke:'rgba(124,58,237,.2)','stroke-width':'1','stroke-dasharray':'8 6'}));
+  txt(root,'LYMPH NODE — PARACORTEX / T CELL ZONE',340,18,'7.5','rgba(165,180,252,.5)','middle');
+
+  // Background naive T cell crowd (faint, far back)
+  [[80,80],[130,100],[80,170],[130,200],[560,75],[610,100],[590,165],[630,185],[620,130],[70,130]].forEach(([cx,cy])=>{
+    const g=e('g'); g.setAttribute('opacity','.22');
+    drawCD4(g,cx,cy,13); root.appendChild(g);
+  });
+
+  // DC at center — large, upregulated
   const dcG=e('g'); dcG.style.animation='floatY 4s ease-in-out infinite'; dcG.style.transformOrigin='340px 148px';
-  drawDendritic(dcG,340,148,34); txt(dcG,'MHC-I & MHC-II',340,196,'8','#FDE68A','middle'); txt(dcG,'CD80/86↑  CCR7↑',340,207,'7.5','#92400E','middle'); root.appendChild(dcG);
-  const a1=e('path',{d:'M310 148 Q255 153 242 153',fill:'none',stroke:'#4338CA','stroke-width':'1.2','stroke-dasharray':'5 3','marker-end':'url(#arr-p)',opacity:'.6'});
-  a1.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(a1);
-  const a2=e('path',{d:'M370 148 Q425 153 438 153',fill:'none',stroke:'#6D28D9','stroke-width':'1.2','stroke-dasharray':'5 3','marker-end':'url(#arr-p)',opacity:'.6'});
-  a2.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(a2);
-  txt(root,'MHC-II',242,118,'7.5','rgba(67,56,202,.7)','middle');
-  txt(root,'MHC-I',438,118,'7.5','rgba(109,40,217,.7)','middle');
-  txt(root,'Signal 1: TCR/MHC  ·  Signal 2: CD28/CD80  ·  Signal 3: IL-12',340,262,'8','rgba(217,119,6,.45)','middle');
+  drawDendritic(dcG,340,148,38);
+  txt(dcG,'mature DC',340,200,'8','#FDE68A','middle');
+  txt(dcG,'MHC-I·MHC-II · CD80/86↑',340,212,'7','#92400E','middle');
+  root.appendChild(dcG);
+
+  // MHC-II groove label (left arm)
+  root.appendChild(e('path',{d:'M303 142 L252 138',fill:'none',stroke:'rgba(67,56,202,.55)','stroke-width':'1','stroke-dasharray':'3 2','marker-end':'url(#arr-p)',opacity:'.7'}));
+  root.appendChild(e('rect',{x:170,y:118,width:80,height:36,rx:6,fill:'rgba(67,56,202,.1)',stroke:'rgba(67,56,202,.4)','stroke-width':'1'}));
+  txt(root,'MHC-II',210,133,'7.5','rgba(165,180,252,.9)','middle');
+  txt(root,'viral peptide',210,144,'7','rgba(165,180,252,.6)','middle');
+
+  // MHC-I groove label (right arm)
+  root.appendChild(e('path',{d:'M377 142 L428 138',fill:'none',stroke:'rgba(109,40,217,.55)','stroke-width':'1','stroke-dasharray':'3 2','marker-end':'url(#arr-p)',opacity:'.7'}));
+  root.appendChild(e('rect',{x:430,y:118,width:80,height:36,rx:6,fill:'rgba(109,40,217,.1)',stroke:'rgba(109,40,217,.4)','stroke-width':'1'}));
+  txt(root,'MHC-I',470,133,'7.5','rgba(196,181,253,.9)','middle');
+  txt(root,'cross-presented',470,144,'7','rgba(196,181,253,.6)','middle');
+
+  // CD4+ T cell left — engaging MHC-II
+  const cd4g=e('g'); cd4g.style.animation='floatY 3s ease-in-out infinite 0.5s'; cd4g.style.transformOrigin='218px 200px';
+  drawCD4(cd4g,218,200,26);
+  txt(cd4g,'CD4+ T cell',218,234,'7.5','#A5B4FC','middle');
+  root.appendChild(cd4g);
+  // Immunological synapse line CD4 → DC
+  const syn1=e('path',{d:'M234 185 Q278 170 308 162',fill:'none',stroke:'rgba(67,56,202,.6)','stroke-width':'1.3','stroke-dasharray':'4 3',opacity:'.8'});
+  syn1.style.animation='dashFlow 1.5s linear infinite'; root.appendChild(syn1);
+  txt(root,'TCR:MHC-II',265,165,'6.5','rgba(165,180,252,.6)','middle');
+
+  // CD8+ T cell right — engaging MHC-I
+  const cd8g=e('g'); cd8g.style.animation='floatY 3.5s ease-in-out infinite 1s'; cd8g.style.transformOrigin='462px 200px';
+  drawCD8(cd8g,462,200,26);
+  txt(cd8g,'CD8+ T cell',462,234,'7.5','#C4B5FD','middle');
+  root.appendChild(cd8g);
+  const syn2=e('path',{d:'M448 185 Q406 170 375 162',fill:'none',stroke:'rgba(109,40,217,.6)','stroke-width':'1.3','stroke-dasharray':'4 3',opacity:'.8'});
+  syn2.style.animation='dashFlow 1.5s linear infinite'; root.appendChild(syn2);
+  txt(root,'TCR:MHC-I',415,165,'6.5','rgba(196,181,253,.6)','middle');
+
+  // IL-12 cytokine bubble from DC (downward)
+  const ck=e('g'); ck.style.animation='pulse 2.2s ease-in-out infinite';ck.style.transformOrigin='340px 252px';
+  drawCytokine(ck,340,252,16); root.appendChild(ck);
+  txt(root,'IL-12 (Signal 3)',340,278,'7','rgba(244,114,182,.55)','middle');
+
+  // Three signals footer
+  root.appendChild(e('rect',{x:60,y:285,width:560,height:13,rx:4,fill:'rgba(217,119,6,.06)'}));
+  txt(root,'Signal 1: TCR/MHC  ·  Signal 2: CD28/CD80  ·  Signal 3: IL-12 → full T cell activation',340,294,'7','rgba(217,119,6,.55)','middle');
 }
 
 function buildStage3(root){
-  // Germinal center / B cell zone
-  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#0a1020'}));
-  root.appendChild(e('ellipse',{cx:340,cy:150,rx:310,ry:135,fill:'rgba(3,105,161,.05)',stroke:'#0369A1','stroke-width':'1','stroke-dasharray':'5 4',opacity:'.5'}));
-  txt(root,'LYMPH NODE — B CELL FOLLICLE / GERMINAL CENTER',340,22,'7.5','rgba(3,105,161,.55)','middle');
-  // GC dark zone
-  root.appendChild(e('ellipse',{cx:230,cy:155,rx:95,ry:80,fill:'rgba(3,105,161,.07)',stroke:'#0369A1','stroke-width':'1','stroke-dasharray':'4 3',opacity:'.7'}));
-  txt(root,'DARK ZONE',230,82,'7.5','rgba(3,105,161,.5)','middle');
-  txt(root,'SHM / AID↑',230,94,'7','rgba(3,105,161,.4)','middle');
-  // GC light zone
-  root.appendChild(e('ellipse',{cx:460,cy:155,rx:95,ry:80,fill:'rgba(5,150,105,.06)',stroke:'#059669','stroke-width':'1','stroke-dasharray':'4 3',opacity:'.7'}));
-  txt(root,'LIGHT ZONE',460,82,'7.5','rgba(5,150,105,.5)','middle');
-  txt(root,'FDC antigen display',460,94,'7','rgba(5,150,105,.4)','middle');
-  // Tfh cell floating
+  // Deep blue-black — B cell follicle
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#060e1c'}));
+  // Outer follicle boundary
+  root.appendChild(e('ellipse',{cx:340,cy:152,rx:326,ry:140,fill:'none',stroke:'rgba(3,105,161,.25)','stroke-width':'1.5','stroke-dasharray':'8 6'}));
+  txt(root,'LYMPH NODE — B CELL FOLLICLE / GERMINAL CENTER',340,18,'7.5','rgba(147,197,253,.45)','middle');
+
+  // ── DARK ZONE (left) ──
+  root.appendChild(e('ellipse',{cx:200,cy:155,rx:148,ry:118,fill:'rgba(3,105,161,.1)',stroke:'#0369A1','stroke-width':'1.5','stroke-dasharray':'5 3'}));
+  txt(root,'DARK ZONE',200,42,'8','rgba(147,197,253,.7)','middle');
+  txt(root,'SHM · AID · rapid division',200,55,'6.5','rgba(147,197,253,.4)','middle');
+
+  // Centroblasts in dark zone
+  [[148,100],[196,95],[244,98],[164,138],[210,132],[256,136],[150,172],[200,170],[250,172],[176,210],[224,207]].forEach(([cx,cy],i)=>{
+    const g=e('g'); g.setAttribute('opacity',(0.4+0.2*(i%3)).toFixed(1));
+    drawBcell(g,cx,cy,12); root.appendChild(g);
+  });
+  txt(root,'centroblasts',200,234,'7.5','rgba(147,197,253,.5)','middle');
+
+  // AID mutation sparks
+  [[170,118],[220,105],[175,155],[228,148]].forEach(([cx,cy])=>{
+    for(let a=0;a<5;a++){
+      const ang=(a/5)*Math.PI*2;
+      root.appendChild(e('line',{x1:cx,y1:cy,x2:cx+Math.cos(ang)*5,y2:cy+Math.sin(ang)*5,stroke:'#38BDF8','stroke-width':'0.7',opacity:'.4','stroke-linecap':'round'}));
+    }
+  });
+
+  // Arrow: dark zone → light zone
+  const dz2lz=e('path',{d:'M350 152 Q380 152 400 152',fill:'none',stroke:'rgba(5,150,105,.6)','stroke-width':'1.2','stroke-dasharray':'5 3','marker-end':'url(#arr-g)',opacity:'.7'});
+  dz2lz.style.animation='dashFlow 2s linear infinite'; root.appendChild(dz2lz);
+  txt(root,'selection',375,143,'6.5','rgba(5,150,105,.5)','middle');
+
+  // ── LIGHT ZONE (right) ──
+  root.appendChild(e('ellipse',{cx:500,cy:155,rx:148,ry:118,fill:'rgba(5,150,105,.08)',stroke:'#059669','stroke-width':'1.5','stroke-dasharray':'5 3'}));
+  txt(root,'LIGHT ZONE',500,42,'8','rgba(110,231,183,.7)','middle');
+  txt(root,'affinity maturation · FDC display',500,55,'6.5','rgba(110,231,183,.4)','middle');
+
+  // Centrocytes in light zone
+  [[450,100],[496,96],[542,100],[464,138],[508,134],[552,138],[458,175],[504,172],[550,175]].forEach(([cx,cy],i)=>{
+    const g=e('g'); g.setAttribute('opacity',(0.35+0.15*(i%3)).toFixed(1));
+    drawBcell(g,cx,cy,12); root.appendChild(g);
+  });
+
+  // Follicular DC
+  const fdc=e('g'); fdc.setAttribute('opacity','.8');
+  drawDendritic(fdc,500,162,20);
+  txt(root,'FDC',500,192,'7','rgba(110,231,183,.7)','middle');
+  txt(root,'antigen display',500,202,'6.5','rgba(110,231,183,.45)','middle');
+  root.appendChild(fdc);
+
+  // ── Tfh cell at junction ──
   const tfh=e('g'); tfh.style.animation='floatY 4s ease-in-out infinite'; tfh.style.transformOrigin='340px 148px';
-  drawCD4(tfh,340,148,28); txt(tfh,'Tfh',340,186,'8','#A5B4FC','middle'); txt(tfh,'CD40L↑  CXCR5↑',340,196,'7','rgba(165,180,252,.6)','middle'); root.appendChild(tfh);
-  // CD40L → CD40 arrow down
-  const acd=e('path',{d:'M340 178 Q340 200 340 210',fill:'none',stroke:'#4338CA','stroke-width':'1.1','stroke-dasharray':'4 3','marker-end':'url(#arr-p)',opacity:'.55'});
-  acd.style.animation='dashFlow 1.6s linear infinite'; root.appendChild(acd);
-  txt(root,'CD40L:CD40',340,220,'7.5','rgba(67,56,202,.55)','middle');
-  txt(root,'→ CSR to IgG',340,230,'7','rgba(67,56,202,.45)','middle');
-  // IFNγ label from left
-  const ia=e('path',{d:'M80 148 Q180 148 230 148',fill:'none',stroke:'#EA580C','stroke-width':'1','stroke-dasharray':'4 3','marker-end':'url(#arr)',opacity:'.4'});
-  ia.style.animation='dashFlow 2s linear infinite'; root.appendChild(ia);
-  txt(root,'IFN-γ (Th1)',60,144,'7.5','rgba(234,88,12,.5)');
+  drawCD4(tfh,340,148,26);
+  txt(tfh,'Tfh',340,183,'7.5','#A5B4FC','middle');
+  txt(tfh,'CD40L↑ · CXCR5↑',340,193,'6.5','rgba(165,180,252,.6)','middle');
+  root.appendChild(tfh);
+
+  // CD40L:CD40 → dark zone
+  const cd40=e('path',{d:'M322 155 Q270 155 252 155',fill:'none',stroke:'rgba(67,56,202,.7)','stroke-width':'1.2','stroke-dasharray':'4 3','marker-end':'url(#arr-p)',opacity:'.7'});
+  cd40.style.animation='dashFlow 1.6s linear infinite'; root.appendChild(cd40);
+  txt(root,'CD40L:CD40',283,148,'6.5','rgba(165,180,252,.55)','middle');
+
+  // IL-21 → light zone
+  const il21=e('path',{d:'M358 150 Q390 144 430 140',fill:'none',stroke:'rgba(244,114,182,.6)','stroke-width':'1','stroke-dasharray':'4 3','marker-end':'url(#arr)',opacity:'.6'});
+  il21.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(il21);
+  txt(root,'IL-21',400,135,'6.5','rgba(244,114,182,.55)','middle');
+
+  // Footer
+  txt(root,'→ CSR: IgM→IgG · plasma cells → bone marrow · memory B cells',340,268,'7','rgba(217,119,6,.5)','middle');
 }
 
 function buildStage4(root){
@@ -835,9 +1025,9 @@ function setMode(m,btn){
    CANVAS MODE
 ═══════════════════════════════════════════════ */
 const CV_NODES_DEF=[
-  {id:'influenza', label:'Influenza\nvirion',  cat:'pathogen', draw:null},
+  {id:'influenza', label:'Influenza\nvirion',  cat:'pathogen', draw:drawInfluenza},
   {id:'tlr7',      label:'TLR7\ndetection',    cat:'innate',   draw:drawTLR},
-  {id:'nfkb',      label:'NF-κB\nsignaling',   cat:'innate',   draw:null},
+  {id:'nfkb',      label:'NF-κB\nsignaling',   cat:'innate',   draw:drawNFkB},
   {id:'ifn',       label:'IFN-α/β\nrelease',   cat:'cytokine', draw:drawCytokine},
   {id:'macrophage',label:'Macrophage',          cat:'innate',   draw:drawMacrophage},
   {id:'nkcell',    label:'NK cell',             cat:'innate',   draw:drawNK},
@@ -1011,6 +1201,11 @@ function cvOnMove(ev){
     const p=cvPlaced[cvDraggingNode];
     p.x=Math.max(60,Math.min(620,pt.x-cvDragOffset.x));
     p.y=Math.max(40,Math.min(520,pt.y-cvDragOffset.y));
+    // Show trash zone and highlight if near top-right corner (SVG coords ~x>580 y<70)
+    const trashEl=document.getElementById('cv-trash-zone');
+    trashEl.classList.add('active');
+    const nearTrash=(pt.x-cvDragOffset.x)>540&&(pt.y-cvDragOffset.y)<80;
+    trashEl.classList.toggle('over',nearTrash);
     cvRender();
   }
   if(cvConnectFrom&&cvTempLine){
@@ -1019,6 +1214,26 @@ function cvOnMove(ev){
 }
 
 function cvOnUp(ev){
+  // Hide trash zone
+  const trashEl=document.getElementById('cv-trash-zone');
+  trashEl.classList.remove('active','over');
+
+  if(cvDraggingNode){
+    const pt=cvSvgPoint(ev.clientX,ev.clientY);
+    const p=cvPlaced[cvDraggingNode];
+    // Remove if dropped into trash zone (SVG x>540 y<80, accounting for offset)
+    if(p&&(pt.x-cvDragOffset.x)>540&&(pt.y-cvDragOffset.y)<80){
+      const label=p.def.label.replace('\n',' ');
+      // Remove any links involving this node
+      cvLinks=cvLinks.filter(l=>l.from!==cvDraggingNode&&l.to!==cvDraggingNode);
+      document.getElementById('cvchip-'+cvDraggingNode)?.classList.remove('placed');
+      delete cvPlaced[cvDraggingNode];
+      cvShowFb(`Removed ${label}`,  '#D97706');
+      cvRender();
+    }
+    cvDraggingNode=null;
+  }
+
   if(cvConnectFrom){
     const pt=cvSvgPoint(ev.clientX,ev.clientY);
     let target=null,minD=45;
@@ -1042,7 +1257,6 @@ function cvOnUp(ev){
     cvTempLine=null; cvConnectFrom=null;
     cvRender();
   }
-  cvDraggingNode=null;
 }
 
 function cvReset(){
@@ -1320,6 +1534,10 @@ function hideFb(){document.getElementById('feedback-bar').classList.remove('show
 })();
 
 /* ── TOUCH SUPPORT ── */
+// Also hide trash zone on any document mouseup (covers drags that exit the SVG)
+document.addEventListener('mouseup',()=>{
+  document.getElementById('cv-trash-zone')?.classList.remove('active','over');
+});
 function touchToMouse(ev,type){
   const t=ev.touches[0]||ev.changedTouches[0];
   document.dispatchEvent(new MouseEvent(type,{clientX:t.clientX,clientY:t.clientY,bubbles:true}));
