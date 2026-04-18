@@ -6,7 +6,7 @@
  *
  * Flow:
  *   startLevel() → resetGame() → loadStage(0)
- *   loadStage(idx) builds scene + tray for STAGES[idx]
+ *   loadStage(idx) builds scene + tray for getStages()[idx]
  *   Drag cell chip → mousedown → mousemove (ghost) → mouseup (hit-test drop zones)
  *   Correct drop → placeCell() → all zones met → showResult() → nextStage()
  *   Final stage → showComplete() → unlocks Canvas tab
@@ -22,11 +22,21 @@ const SAVE='immunocascade_v1';
 function loadP(){try{return JSON.parse(localStorage.getItem(SAVE))||{};}catch{return{};}}
 function saveP(d){localStorage.setItem(SAVE,JSON.stringify(d));}
 
+// Active level ID and stage list — set by startLevel()
+let currentLevel='flu';
+function getStages(){return currentLevel==='bacterial'?STAGES_BACTERIAL:STAGES;}
+
 let stageIdx=0,placed={},dzMet={},dragging=null;
 
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function goHome(){showScreen('title-screen');}
-function startLevel(id){if(id!=='flu')return;resetGame();showScreen('game-screen');}
+function startLevel(id){
+  if(id!=='flu'&&id!=='bacterial')return;
+  currentLevel=id;
+  const lvlName=id==='flu'?'Level 1 — Influenza':'Level 2 — Bacterial';
+  document.getElementById('gb-name').textContent=lvlName;
+  resetGame();showScreen('game-screen');
+}
 function setMode(m,btn){
   document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
@@ -53,7 +63,7 @@ function setMode(m,btn){
 function resetGame(){
   stageIdx=0;placed={};dzMet={};dragging=null;
   document.getElementById('day-display').textContent='0';
-  document.getElementById('stage-display').textContent='Stage 1 of '+STAGES.length;
+  document.getElementById('stage-display').textContent='Stage 1 of '+getStages().length;
   document.getElementById('result-overlay').classList.remove('show');
   document.getElementById('complete-overlay').classList.remove('show');
   hideFb();resetTL();loadStage(0);
@@ -61,12 +71,12 @@ function resetGame(){
 function resetTL(){for(let i=0;i<5;i++){document.getElementById('tl-'+i)?.classList.remove('active','done');document.getElementById('tll-'+i)?.classList.remove('active','done');if(i<4)document.getElementById('tl-line-'+i)?.classList.remove('done');}}
 function loadStage(idx){
   stageIdx=idx;placed={};dzMet={};
-  const st=STAGES[idx];
+  const st=getStages()[idx];
   document.getElementById('narr-day').textContent=st.day;
   document.getElementById('narr-text').innerHTML=st.narr;
   document.getElementById('narr-prompt').textContent=st.prompt;
   document.getElementById('day-display').textContent=st.dayNum;
-  document.getElementById('stage-display').textContent='Stage '+(idx+1)+' of '+STAGES.length;
+  document.getElementById('stage-display').textContent='Stage '+(idx+1)+' of '+getStages().length;
   document.getElementById('tl-'+st.tlIndex).classList.add('active');
   document.getElementById('tll-'+st.tlIndex).classList.add('active');
   buildScene(st); buildTray(st);
@@ -119,7 +129,7 @@ document.addEventListener('selectstart',ev=>{
 document.addEventListener('mousemove',ev=>{
   if(!dragging)return; moveGhost(ev.clientX,ev.clientY);
   const pt=svgPt(ev.clientX,ev.clientY);
-  STAGES[stageIdx].dropZones.forEach(dz=>{
+  getStages()[stageIdx].dropZones.forEach(dz=>{
     const g=document.getElementById(dz.id); if(!g||dzMet[dz.id])return;
     const hit=Math.hypot(pt.x-dz.cx,pt.y-dz.cy)<dz.r;
     const c=g.querySelector('circle');
@@ -133,7 +143,7 @@ document.addEventListener('mouseup',ev=>{
   const id=dragging; dragging=null;
   document.getElementById('drag-ghost').style.display='none';
   document.getElementById('chip-'+id)?.classList.remove('dragging');
-  const st=STAGES[stageIdx];
+  const st=getStages()[stageIdx];
   st.dropZones.forEach(dz=>{const g=document.getElementById(dz.id);if(!g)return;const c=g.querySelector('circle');c.setAttribute('stroke','#D97706');c.setAttribute('fill','rgba(61,24,0,.45)');});
   if(placed[id])return;
   const pt=svgPt(ev.clientX,ev.clientY);
@@ -159,35 +169,75 @@ function placeCell(id,cx,cy){
 }
 
 function showResult(){
-  const st=STAGES[stageIdx];
+  const st=getStages()[stageIdx];
   document.getElementById('result-emoji').textContent=st.resultEmoji;
   document.getElementById('result-title').textContent=st.resultTitle;
   document.getElementById('result-msg').textContent=st.resultMsg;
-  const hasNext=stageIdx<STAGES.length-1;
+  const hasNext=stageIdx<getStages().length-1;
   document.getElementById('next-btn').textContent=hasNext?'Next stage →':'See results';
   document.getElementById('result-overlay').classList.add('show');
-  const prog=loadP(); prog.flu=prog.flu||{};
-  prog.flu['stage'+stageIdx]=true; saveP(prog);
-  const pct=Math.round((Object.keys(prog.flu).filter(k=>k.startsWith('stage')).length/STAGES.length)*100);
-  const fill=document.getElementById('prog-flu'); if(fill)fill.style.width=pct+'%';
+  const prog=loadP(); prog[currentLevel]=prog[currentLevel]||{};
+  prog[currentLevel]['stage'+stageIdx]=true; saveP(prog);
+  const lvlProg=prog[currentLevel];
+  const pct=Math.round((Object.keys(lvlProg).filter(k=>k.startsWith('stage')).length/getStages().length)*100);
+  const fillId=currentLevel==='flu'?'prog-flu':'prog-bacterial';
+  const fill=document.getElementById(fillId); if(fill)fill.style.width=pct+'%';
 }
 function closeResult(){document.getElementById('result-overlay').classList.remove('show');}
 function nextStage(){
   document.getElementById('result-overlay').classList.remove('show');
-  const st=STAGES[stageIdx];
+  const st=getStages()[stageIdx];
   document.getElementById('tl-'+st.tlIndex).classList.replace('active','done');
   document.getElementById('tll-'+st.tlIndex).classList.replace('active','done');
   if(st.tlIndex<4)document.getElementById('tl-line-'+st.tlIndex).classList.add('done');
-  if(stageIdx<STAGES.length-1){loadStage(stageIdx+1);}
+  if(stageIdx<getStages().length-1){loadStage(stageIdx+1);}
   else{showComplete();}
 }
+const LEVEL_COMPLETE={
+  flu:{
+    title:'Level 1 Complete',
+    sub:'You\'ve traced the complete influenza immune response — from viral entry to long-lived memory.',
+    concepts:[
+      'TLR7 → IRF3/NF-κB → IFN-α/β + pro-inflammatory cytokines',
+      'DC CCR7↑ → afferent lymphatics → T cell zone priming',
+      'CD40L:CD40 → B cell CSR → IgG neutralizing antibodies',
+      'CD8+ CTL → perforin/granzyme → viral clearance + Tcm/Tem memory',
+    ],
+  },
+  bacterial:{
+    title:'Level 2 Complete',
+    sub:'You\'ve mapped the complete response to a Gram-positive bacterial infection — from PAMP recognition to adaptive resolution.',
+    concepts:[
+      'TLR2/NOD2 → NF-κB → IL-8 gradient → neutrophil recruitment',
+      'C3b (alternative complement) + IgG → opsonization → CR1/Fcγ-R phagocytosis',
+      'Oxidative burst (NADPH oxidase → ROS) + degranulation → bacterial killing',
+      'DC/Th17 → IL-17A → G-CSF → sustained neutrophil reserve',
+    ],
+  },
+};
+
 function showComplete(){
   document.getElementById('complete-overlay').classList.add('show');
-  // Mark level complete and unlock canvas tab
-  const prog=loadP(); prog.flu=prog.flu||{};
-  prog.flu.levelComplete=true; saveP(prog);
-  const tab=document.getElementById('tab-canvas');
-  if(tab) tab.textContent='Canvas';
+  const prog=loadP(); prog[currentLevel]=prog[currentLevel]||{};
+  prog[currentLevel].levelComplete=true; saveP(prog);
+  // Populate overlay content
+  const lc=LEVEL_COMPLETE[currentLevel]||LEVEL_COMPLETE.flu;
+  document.getElementById('complete-title').textContent=lc.title;
+  document.getElementById('complete-sub').textContent=lc.sub;
+  const cc=document.getElementById('complete-concepts');
+  cc.innerHTML=lc.concepts.map(c=>`<div class="key-concept">${c}</div>`).join('');
+  // Unlock canvas tab after Level 1
+  if(currentLevel==='flu'){
+    const tab=document.getElementById('tab-canvas');
+    if(tab) tab.textContent='Canvas';
+  }
+  // Unlock Level 2 card after Level 1
+  if(currentLevel==='flu'){
+    const lv2=document.getElementById('lv2-card');
+    if(lv2){lv2.classList.remove('locked');lv2.onclick=()=>startLevel('bacterial');}
+    const badge=document.getElementById('lv2-badge');
+    if(badge){badge.textContent='Available';badge.className='lc-badge badge-open';}
+  }
 }
 function closeComplete(){document.getElementById('complete-overlay').classList.remove('show');}
 
@@ -225,12 +275,27 @@ function hideFb(){document.getElementById('feedback-bar').classList.remove('show
 /* INIT */
 (function(){
   const prog=loadP();
+  // Restore flu progress bar
   if(prog.flu){
     const n=Object.keys(prog.flu).filter(k=>k.startsWith('stage')).length;
-    const fill=document.getElementById('prog-flu'); if(fill)fill.style.width=Math.round((n/STAGES.length)*100)+'%';
+    const fill=document.getElementById('prog-flu');
+    if(fill)fill.style.width=Math.round((n/STAGES.length)*100)+'%';
     if(prog.flu.levelComplete){
       const tab=document.getElementById('tab-canvas'); if(tab) tab.textContent='Canvas';
     }
+  }
+  // Restore bacterial progress bar
+  if(prog.bacterial){
+    const n=Object.keys(prog.bacterial).filter(k=>k.startsWith('stage')).length;
+    const fill=document.getElementById('prog-bacterial');
+    if(fill)fill.style.width=Math.round((n/STAGES_BACTERIAL.length)*100)+'%';
+  }
+  // Unlock Level 2 card if Level 1 complete
+  if(prog.flu?.levelComplete){
+    const lv2=document.getElementById('lv2-card');
+    if(lv2){lv2.classList.remove('locked');lv2.onclick=()=>startLevel('bacterial');}
+    const badge=document.getElementById('lv2-badge');
+    if(badge){badge.textContent='Available';badge.className='lc-badge badge-open';}
   }
 })();
 

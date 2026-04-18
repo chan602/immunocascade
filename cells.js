@@ -279,16 +279,96 @@ function drawClearance(g,cx,cy,s){
   g.appendChild(ck);
 }
 
+// ─────────────────────────────────────────────
+// LEVEL 2 — BACTERIAL ASSETS
+// ─────────────────────────────────────────────
+
+function drawBacteria(g,cx,cy,s){
+  // Gram-positive coccus (Staphylococcus-style):
+  // thick peptidoglycan wall rendered as a double-ring, clusters of 4 (tetrad).
+  // Single cell for tray; scene builders use this fn multiple times for clusters.
+  const r = s * .32;
+  // Thick PG wall — outer ring
+  g.appendChild(e('circle',{cx,cy,r:r+s*.06,fill:'#A3E635',stroke:'#65A30D','stroke-width':'1.2',opacity:'.4'}));
+  // Inner membrane + cytoplasm
+  g.appendChild(e('circle',{cx,cy,r,fill:'#BEF264',stroke:'#65A30D','stroke-width':'1.8'}));
+  // Nucleoid (irregular blob)
+  g.appendChild(e('ellipse',{cx:cx+s*.04,cy:cy-s*.03,rx:s*.14,ry:s*.11,fill:'#4D7C0F',opacity:'.6'}));
+  // Division plane (binary fission hint)
+  g.appendChild(e('line',{x1:cx-r,y1:cy,x2:cx+r,y2:cy,stroke:'#65A30D','stroke-width':'0.8',opacity:'.5'}));
+  // Surface proteins (short ticks)
+  for(let i=0;i<8;i++){
+    const a=(i/8)*Math.PI*2;
+    const x1=cx+Math.cos(a)*(r+s*.06), y1=cy+Math.sin(a)*(r+s*.06);
+    const x2=cx+Math.cos(a)*(r+s*.14), y2=cy+Math.sin(a)*(r+s*.14);
+    g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#84CC16','stroke-width':'1','stroke-linecap':'round',opacity:'.7'}));
+  }
+}
+
+function drawNeutrophil(g,cx,cy,s){
+  // Neutrophil: multilobed nucleus (3 lobes connected by thin strands) + granules.
+  // Body is pale lavender-grey; nucleus dark purple, multilobed.
+  const r = s * .36;
+  // Cell body
+  g.appendChild(e('circle',{cx,cy,r,fill:'#E0E7FF',stroke:'#6366F1','stroke-width':'1.6'}));
+  // Three nuclear lobes connected by thin filaments
+  const lobes=[[-s*.1,-s*.1],[s*.1,-s*.08],[0,s*.12]];
+  const lr=s*.1;
+  // filaments first (behind lobes)
+  for(let i=0;i<lobes.length;i++){
+    const [ax,ay]=lobes[i],[bx,by]=lobes[(i+1)%lobes.length];
+    g.appendChild(e('line',{x1:cx+ax,y1:cy+ay,x2:cx+bx,y2:cy+by,stroke:'#4338CA','stroke-width':'1',opacity:'.5'}));
+  }
+  lobes.forEach(([dx,dy])=>{
+    g.appendChild(e('circle',{cx:cx+dx,cy:cy+dy,r:lr,fill:'#4338CA',opacity:'.75'}));
+  });
+  // Cytoplasmic granules (small pink dots)
+  [[-s*.18,s*.08],[s*.16,s*.1],[s*.02,-s*.2],[-s*.16,-s*.04],[s*.18,-s*.04]].forEach(([dx,dy])=>{
+    g.appendChild(e('circle',{cx:cx+dx,cy:cy+dy,r:s*.045,fill:'#F9A8D4',stroke:'#EC4899','stroke-width':'0.6',opacity:'.8'}));
+  });
+  // "N" label
+  const l=e('text',{x:cx,y:cy+s*.22,fill:'#3730A3','text-anchor':'middle','dominant-baseline':'central','font-size':s*.16,'font-weight':'700','font-family':'sans-serif'});
+  l.textContent='N'; g.appendChild(l);
+}
+
+function drawComplement(g,cx,cy,s){
+  // C3b opsonin tag: shown as a small molecular complex — a bent "hook" shape
+  // that anchors to the bacterial surface, with the recognition domain exposed.
+  // Colour: teal/cyan (complement cascade colours in immunology diagrams).
+  const arm = s * .28;
+  // Alpha-chain hook (curved arm)
+  g.appendChild(e('path',{
+    d:`M${cx-arm},${cy+s*.1} Q${cx-arm*.6},${cy-arm} ${cx+arm*.2},${cy-arm*.8}`,
+    fill:'none',stroke:'#06B6D4','stroke-width':s*.13,'stroke-linecap':'round'
+  }));
+  // Beta-chain short stub
+  g.appendChild(e('line',{x1:cx-arm,y1:cy+s*.1,x2:cx-arm*.2,y2:cy+s*.28,
+    stroke:'#0891B2','stroke-width':s*.1,'stroke-linecap':'round'}));
+  // Thioester bond attachment dot (anchors to bacteria)
+  g.appendChild(e('circle',{cx:cx-arm*.2,cy:cy+s*.28,r:s*.07,fill:'#0E7490',stroke:'#164E63','stroke-width':'1'}));
+  // Recognition domain — small filled oval at tip
+  g.appendChild(e('ellipse',{cx:cx+arm*.2,cy:cy-arm*.8,rx:s*.1,ry:s*.07,
+    fill:'#22D3EE',stroke:'#06B6D4','stroke-width':'1',transform:`rotate(-30 ${cx+arm*.2} ${cy-arm*.8})`}));
+  // C3b label
+  const l=e('text',{x:cx+s*.18,y:cy,fill:'#06B6D4','text-anchor':'middle','font-size':s*.17,'font-weight':'700','font-family':'sans-serif'});
+  l.textContent='C3b'; g.appendChild(l);
+}
+
 const CELL_DEFS={
-  macrophage:{label:'Macrophage',draw:drawMacrophage},
-  nkcell:{label:'NK cell',draw:drawNK},
-  dendritic:{label:'Dendritic cell',draw:drawDendritic},
-  cd4:{label:'CD4+ T cell',draw:drawCD4},
-  cd8:{label:'CD8+ T cell',draw:drawCD8},
-  bcell:{label:'B cell',draw:drawBcell},
-  plasma:{label:'Plasma cell',draw:drawPlasma},
-  memory:{label:'Memory cell',draw:drawMemory},
-  antibody:{label:'IgG antibody',draw:drawAntibody},
-  tlr7:{label:'TLR7',draw:drawTLR},
-  cytokine:{label:'Cytokine',draw:drawCytokine},
+  // Level 1 — Influenza
+  macrophage:{label:'Macrophage',    draw:drawMacrophage},
+  nkcell:    {label:'NK cell',       draw:drawNK},
+  dendritic: {label:'Dendritic cell',draw:drawDendritic},
+  cd4:       {label:'CD4+ T cell',   draw:drawCD4},
+  cd8:       {label:'CD8+ T cell',   draw:drawCD8},
+  bcell:     {label:'B cell',        draw:drawBcell},
+  plasma:    {label:'Plasma cell',   draw:drawPlasma},
+  memory:    {label:'Memory cell',   draw:drawMemory},
+  antibody:  {label:'IgG antibody',  draw:drawAntibody},
+  tlr7:      {label:'TLR7',          draw:drawTLR},
+  cytokine:  {label:'Cytokine',      draw:drawCytokine},
+  // Level 2 — Bacterial
+  bacteria:    {label:'Bacteria',      draw:drawBacteria},
+  neutrophil:  {label:'Neutrophil',    draw:drawNeutrophil},
+  complement:  {label:'C3b opsonin',   draw:drawComplement},
 };

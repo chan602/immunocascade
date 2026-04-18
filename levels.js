@@ -429,3 +429,254 @@ const STAGES=[
     resultMsg:'The influenza virus has been cleared. Immunological memory is established. Upon re-exposure, memory T and B cells will mount a faster, stronger secondary response — the basis of vaccine protection.',
   },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEVEL 2 — BACTERIAL (Staphylococcus aureus / Gram-positive)
+//
+// Scene coordinate system: viewBox 0 0 680 300 (same as Level 1).
+// New cell assets: drawBacteria, drawNeutrophil, drawComplement (cells.js).
+// ─────────────────────────────────────────────────────────────────────────────
+
+function baseSkin(root){
+  // Dermis / subcutaneous tissue — warm pinkish brown
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#2d1a0e'}));
+  // Epidermis band at top
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:52,fill:'#c0824a',opacity:'.28'}));
+  root.appendChild(e('rect',{x:0,y:48,width:680,height:4,fill:'#92400E',opacity:'.6'}));
+  txt(root,'EPIDERMIS / WOUND ENTRY',14,16,'7','#92400E');
+  // Dermis label
+  txt(root,'DERMIS',14,72,'7','rgba(146,64,14,.45)');
+  // Capillary on right
+  root.appendChild(e('rect',{x:604,y:0,width:76,height:300,fill:'#4a1515',opacity:'.85'}));
+  root.appendChild(e('line',{x1:604,y1:0,x2:604,y2:300,stroke:'#6b2020','stroke-width':'2.5'}));
+  txt(root,'BLOOD\nVESSEL',634,90,'7','#6b2020','middle');
+  // Collagen fibres (diagonal lines)
+  for(let i=0;i<8;i++){
+    const y=40+i*35;
+    root.appendChild(e('line',{x1:0,y1:y,x2:598,y2:y+20,stroke:'rgba(146,64,14,.12)','stroke-width':'1.5'}));
+  }
+}
+
+function buildBacStage0(root){
+  baseSkin(root);
+  txt(root,'BACTERIAL INFECTION — Hour 0',340,18,'8','rgba(163,230,53,.5)','middle');
+  txt(root,'Staphylococcus aureus · Gram-positive · peptidoglycan wall · Protein A',340,30,'6.5','rgba(163,230,53,.32)','middle');
+
+  // Cluster of bacteria at wound entry
+  [[140,110],[168,98],[155,128],[190,112],[175,140]].forEach(([cx,cy])=>{
+    const bg=e('g'); drawBacteria(bg,cx,cy,15); root.appendChild(bg);
+  });
+  txt(root,'S. aureus cluster',165,162,'7.5','rgba(163,230,53,.6)','middle');
+
+  // TLR2 on macrophage surface — PAMP recognition
+  // Macrophage tissue-resident, left side
+  const mG=e('g'); mG.style.animation='floatY 4s ease-in-out infinite'; mG.style.transformOrigin='80px 200px';
+  drawMacrophage(mG,80,200,24);
+  txt(mG,'tissue macrophage',80,234,'7','#FDE68A','middle');
+  root.appendChild(mG);
+
+  // TLR2 signal arrow from bacteria to macrophage
+  const tlr2=e('path',{d:'M145 130 Q115 160 98 188',fill:'none',stroke:'#EA580C','stroke-width':'1.2','stroke-dasharray':'4 3','marker-end':'url(#arr)',opacity:'.7'});
+  tlr2.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(tlr2);
+  txt(root,'TLR2/6 · NOD2',118,154,'7','rgba(234,88,12,.6)','middle');
+  txt(root,'peptidoglycan / LTA',118,163,'6.5','rgba(234,88,12,.45)','middle');
+
+  // NF-κB → cytokine burst (TNF-α, IL-1β, IL-8)
+  const ckG=e('g'); ckG.style.animation='pulse 2s ease-in-out infinite'; ckG.style.transformOrigin='80px 255px';
+  drawCytokine(ckG,80,255,13); root.appendChild(ckG);
+  txt(root,'TNF-α · IL-1β · IL-8 →',80,278,'6.5','rgba(244,114,182,.55)','middle');
+
+  // Complement activation (alternative pathway) — C3b tagging bacteria
+  const cG=e('g'); cG.style.animation='floatY 3s ease-in-out infinite 0.5s'; cG.style.transformOrigin='300px 125px';
+  drawComplement(cG,300,118,18); root.appendChild(cG);
+  txt(root,'alternative pathway C3b',300,148,'7','rgba(6,182,212,.6)','middle');
+
+  // Drop zone hint
+  txt(root,'innate sentinels mobilising →',340,268,'7','rgba(217,119,6,.35)','middle');
+}
+
+function buildBacStage1(root){
+  baseSkin(root);
+  txt(root,'ACUTE INFLAMMATION — Hour 1–4',340,18,'8','rgba(239,68,68,.55)','middle');
+  txt(root,'IL-8 gradient · selectin upregulation · neutrophil extravasation',340,30,'6.5','rgba(239,68,68,.3)','middle');
+
+  // Bacteria still present (fewer, being attacked)
+  [[145,115],[170,100],[160,135]].forEach(([cx,cy])=>{
+    const bg=e('g'); bg.setAttribute('opacity','.7'); drawBacteria(bg,cx,cy,13); root.appendChild(bg);
+  });
+
+  // IL-8 chemokine gradient from tissue → blood vessel (right to left)
+  for(let i=0;i<5;i++){
+    const d=e('circle',{r:'2.5',fill:'#F472B6',opacity:'.6'});
+    const anim=e('animateMotion',{dur:`${2+i*.35}s`,repeatCount:'indefinite',begin:`${i*.4}s`,
+      path:'M580 150 Q450 145 300 148 Q200 150 130 155'});
+    d.appendChild(anim); root.appendChild(d);
+  }
+  txt(root,'IL-8 / CXCL8 gradient',360,128,'7','rgba(244,114,182,.5)','middle');
+
+  // Neutrophils rolling/extravasating from blood vessel
+  const n1=e('g'); n1.style.animation='floatY 2.5s ease-in-out infinite'; n1.style.transformOrigin='555px 155px';
+  drawNeutrophil(n1,555,155,22); txt(n1,'rolling',555,185,'7','rgba(99,102,241,.6)','middle'); root.appendChild(n1);
+
+  const n2=e('g'); n2.style.animation='floatY 3s ease-in-out infinite 0.7s'; n2.style.transformOrigin='490px 158px';
+  drawNeutrophil(n2,490,158,22); txt(n2,'transmigrating',490,188,'7','rgba(99,102,241,.6)','middle'); root.appendChild(n2);
+
+  // Selectin / integrin labels on vessel wall
+  txt(root,'P-selectin ↑',610,60,'7','rgba(239,68,68,.55)','middle');
+  txt(root,'ICAM-1 ↑',610,72,'7','rgba(239,68,68,.45)','middle');
+
+  // Arriving neutrophil at infection site
+  const n3=e('g'); n3.style.animation='floatY 2s ease-in-out infinite 1.2s'; n3.style.transformOrigin='340px 170px';
+  drawNeutrophil(n3,340,170,26);
+  txt(n3,'neutrophil',340,204,'7.5','#818CF8','middle');
+  txt(n3,'arriving',340,214,'7','rgba(99,102,241,.55)','middle');
+  root.appendChild(n3);
+
+  // Drop zone context
+  txt(root,'drag neutrophil to the infection site',340,268,'7','rgba(217,119,6,.35)','middle');
+}
+
+function buildBacStage2(root){
+  baseSkin(root);
+  txt(root,'OPSONIZATION & PHAGOCYTOSIS — Hour 4–12',340,18,'8','rgba(6,182,212,.55)','middle');
+  txt(root,'C3b + IgG opsonins coat bacteria → Fcγ-R + CR1 recognition → phagolysosome',340,30,'6.5','rgba(6,182,212,.3)','middle');
+
+  // Opsonized bacteria — bacteria with C3b tags
+  [[175,145],[210,130],[195,165]].forEach(([cx,cy],i)=>{
+    const bg=e('g'); drawBacteria(bg,cx,cy,14); root.appendChild(bg);
+    const cg=e('g'); drawComplement(cg,cx+12,cy-14,11); root.appendChild(cg);
+  });
+  txt(root,'opsonized bacteria',195,195,'7.5','rgba(6,182,212,.6)','middle');
+  txt(root,'C3b · IgG coat',195,205,'7','rgba(6,182,212,.4)','middle');
+
+  // Neutrophil engulfing — large, central
+  const nG=e('g'); nG.style.animation='floatY 3.5s ease-in-out infinite'; nG.style.transformOrigin='370px 160px';
+  drawNeutrophil(nG,370,160,32);
+  txt(nG,'neutrophil',370,202,'7.5','#818CF8','middle');
+  root.appendChild(nG);
+
+  // Phagocytosis arrow
+  const phArr=e('path',{d:'M218 150 Q290 152 338 158',fill:'none',stroke:'rgba(6,182,212,.7)','stroke-width':'1.3','stroke-dasharray':'4 3','marker-end':'url(#arr-g)',opacity:'.75'});
+  phArr.style.animation='dashFlow 1.5s linear infinite'; root.appendChild(phArr);
+  txt(root,'CR1 · Fcγ-R',278,143,'7','rgba(6,182,212,.55)','middle');
+
+  // ROS/degranulation burst
+  const rosG=e('g'); rosG.style.animation='pulse 1.5s ease-in-out infinite'; rosG.style.transformOrigin='370px 160px';
+  for(let a=0;a<8;a++){
+    const ang=(a/8)*Math.PI*2;
+    rosG.appendChild(e('line',{x1:370+Math.cos(ang)*34,y1:160+Math.sin(ang)*34,
+      x2:370+Math.cos(ang)*46,y2:160+Math.sin(ang)*46,
+      stroke:'#FCD34D','stroke-width':'1.4','stroke-linecap':'round',opacity:'.5'}));
+  }
+  root.appendChild(rosG);
+  txt(root,'oxidative burst · ROS',370,240,'7.5','rgba(252,211,77,.6)','middle');
+  txt(root,'elastase · MPO · defensins',370,250,'7','rgba(252,211,77,.4)','middle');
+
+  // Macrophage alongside
+  const mG=e('g'); mG.style.animation='floatY 4s ease-in-out infinite 1s'; mG.style.transformOrigin='520px 160px';
+  drawMacrophage(mG,520,160,24);
+  txt(mG,'macrophage',520,194,'7.5','#FDE68A','middle');
+  txt(mG,'phagocytosis',520,204,'7','rgba(253,230,138,.5)','middle');
+  root.appendChild(mG);
+
+  txt(root,'drag C3b opsonin to coat the bacteria',340,268,'7','rgba(217,119,6,.35)','middle');
+}
+
+function buildBacStage3(root){
+  baseSkin(root);
+  txt(root,'RESOLUTION & ADAPTIVE PRIMING — Day 3–7',340,18,'8','rgba(16,185,129,.55)','middle');
+  txt(root,'Th17 · opsonizing IgG · regulatory resolution',340,30,'6.5','rgba(16,185,129,.3)','middle');
+
+  // Cleared tissue — very faint bacteria
+  [[160,110],[185,95]].forEach(([cx,cy])=>{
+    const g=e('g'); g.setAttribute('opacity','.15'); drawBacteria(g,cx,cy,12); root.appendChild(g);
+  });
+  txt(root,'bacteria cleared',172,138,'7','rgba(163,230,53,.35)','middle');
+
+  // DC presenting to CD4 → Th17 differentiation
+  const dcG=e('g'); dcG.style.animation='floatY 4s ease-in-out infinite'; dcG.style.transformOrigin='310px 155px';
+  drawDendritic(dcG,310,155,26);
+  txt(dcG,'DC · TLR2-primed',310,192,'7.5','#FDE68A','middle');
+  root.appendChild(dcG);
+
+  // Th17 CD4 cell
+  const th17=e('g'); th17.style.animation='floatY 3s ease-in-out infinite 0.6s'; th17.style.transformOrigin='430px 145px';
+  drawCD4(th17,430,145,24);
+  txt(th17,'CD4+ Th17',430,179,'7.5','#A5B4FC','middle');
+  txt(th17,'IL-17A↑ · IL-22↑',430,189,'7','rgba(165,180,252,.55)','middle');
+  root.appendChild(th17);
+
+  // DC → Th17 arrow
+  const dArr=e('path',{d:'M336 155 Q380 150 406 148',fill:'none',stroke:'rgba(124,58,237,.6)','stroke-width':'1.2','stroke-dasharray':'4 3','marker-end':'url(#arr-p)',opacity:'.7'});
+  dArr.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(dArr);
+  txt(root,'IL-6 · TGF-β · IL-23',375,140,'6.5','rgba(124,58,237,.5)','middle');
+
+  // IL-17 → neutrophil recruitment loop label
+  const ilArr=e('path',{d:'M448 162 Q490 200 510 215',fill:'none',stroke:'rgba(244,114,182,.5)','stroke-width':'1','stroke-dasharray':'3 2','marker-end':'url(#arr)',opacity:'.55'});
+  ilArr.style.animation='dashFlow 2s linear infinite'; root.appendChild(ilArr);
+  txt(root,'IL-17A → G-CSF → neutrophil reserve',520,220,'7','rgba(244,114,182,.45)','middle');
+
+  // IgG opsonizing antibody in blood
+  const abG=e('g'); abG.style.animation='floatY 3s ease-in-out infinite 1s'; abG.style.transformOrigin='634px 155px';
+  drawAntibody(abG,634,155,20); root.appendChild(abG);
+  txt(root,'IgG opsonins',634,188,'6.5','rgba(244,114,182,.55)','middle');
+
+  // Memory label
+  txt(root,'memory B + T cells established → rapid recall on re-infection',340,265,'7','rgba(217,119,6,.45)','middle');
+}
+
+const STAGES_BACTERIAL=[
+  {
+    id:'b0',tlIndex:0,day:'Hour 0',dayNum:'0h',
+    narr:'<em>Staphylococcus aureus</em> breaches the skin barrier. Tissue-resident macrophages detect <strong style="color:#F59E0B">peptidoglycan and lipoteichoic acid (LTA)</strong> via TLR2/TLR6 heterodimers and NOD2. NF-κB activation triggers TNF-α, IL-1β, and the neutrophil chemokine <strong style="color:#F59E0B">IL-8 (CXCL8)</strong>. The complement alternative pathway spontaneously deposits C3b on the bacterial surface.',
+    prompt:'→ Drag the macrophage to the infection site to initiate pattern recognition.',
+    buildScene:buildBacStage0,
+    trayIds:['macrophage','neutrophil','bcell','cd8'],
+    dropZones:[
+      {id:'dz-bm',cx:80,cy:200,r:40,accepts:['macrophage'],correctMsg:'✓ Tissue macrophage — TLR2/NOD2 → NF-κB → IL-8, TNF-α, IL-1β, complement activation'},
+    ],
+    wrongMsgs:{neutrophil:'✗ Neutrophils arrive later — recruited by IL-8 from macrophages',bcell:'✗ B cells are adaptive — not present at the initial infection site',cd8:'✗ CD8+ T cells require APC priming in the lymph node first'},
+    resultEmoji:'🦠',resultTitle:'Pattern recognition engaged',
+    resultMsg:'Tissue macrophages recognize bacterial PAMPs via TLR2/NOD2 and activate NF-κB. IL-8 gradients form to recruit neutrophils. C3b begins coating the bacteria via the alternative complement pathway.',
+  },
+  {
+    id:'b1',tlIndex:1,day:'Hour 1–4',dayNum:'1–4h',
+    narr:'IL-8 and TNF-α upregulate <strong style="color:#F59E0B">P-selectin and ICAM-1</strong> on endothelial cells. Neutrophils roll, adhere, and transmigrate through the vessel wall (diapedesis) down the IL-8 gradient. This is the defining feature of acute bacterial inflammation — the <strong style="color:#F59E0B">neutrophil as first responder</strong>.',
+    prompt:'→ Drag the neutrophil into the infection site.',
+    buildScene:buildBacStage1,
+    trayIds:['neutrophil','macrophage','cd4','bcell'],
+    dropZones:[
+      {id:'dz-bn',cx:340,cy:170,r:44,accepts:['neutrophil'],correctMsg:'✓ Neutrophil — IL-8-driven chemotaxis → diapedesis → arrives at infection site Hour 1–4'},
+    ],
+    wrongMsgs:{macrophage:'✗ Macrophages are already present — neutrophils are the recruited first responders',cd4:'✗ CD4+ T cells are adaptive — priming takes 3–5 days',bcell:'✗ B cells are adaptive — not recruited to acute bacterial infection sites'},
+    resultEmoji:'⚡',resultTitle:'Neutrophil mobilisation',
+    resultMsg:'Neutrophils are the dominant cell in acute bacterial infection. They arrive within hours, guided by IL-8, and are ready to phagocytose and destroy bacteria via oxidative burst and degranulation.',
+  },
+  {
+    id:'b2',tlIndex:2,day:'Hour 4–12',dayNum:'4–12h',
+    narr:'C3b and IgG coat the bacterial surface (<strong style="color:#F59E0B">opsonization</strong>). Neutrophils and macrophages recognise opsonins via complement receptor 1 (CR1) and Fcγ receptors, triggering efficient phagocytosis. Inside the phagolysosome, an <strong style="color:#F59E0B">oxidative burst</strong> (NADPH oxidase → superoxide) and degranulation of elastase, MPO, and defensins destroy the bacteria.',
+    prompt:'→ Drag the C3b opsonin to coat the bacteria.',
+    buildScene:buildBacStage2,
+    trayIds:['complement','neutrophil','antibody','macrophage'],
+    dropZones:[
+      {id:'dz-bc2',cx:192,cy:148,r:48,accepts:['complement'],correctMsg:'✓ C3b opsonization → CR1 recognition → phagocytosis → phagolysosome → oxidative burst'},
+    ],
+    wrongMsgs:{neutrophil:'✗ Neutrophils are already present — opsonization coats the bacteria first',antibody:'✗ IgG antibodies come later in the adaptive response — C3b is the early opsonin',macrophage:'✗ Macrophages are present but C3b opsonization is the key step here'},
+    resultEmoji:'💥',resultTitle:'Opsonization and phagocytosis',
+    resultMsg:'C3b-opsonized bacteria are rapidly phagocytosed. The oxidative burst generates reactive oxygen species. Neutrophil degranulation releases elastase and MPO. Most bacteria are cleared within 12 hours in a healthy host.',
+  },
+  {
+    id:'b3',tlIndex:3,day:'Day 3–7',dayNum:'3–7d',
+    narr:'Dendritic cells primed by TLR2 signals migrate to the lymph node and drive <strong style="color:#F59E0B">Th17 differentiation</strong> (IL-6 + TGF-β + IL-23). Th17 cells secrete IL-17A and IL-22, amplifying neutrophil recruitment and epithelial defence. B cells class-switch to <strong style="color:#F59E0B">opsonizing IgG</strong>. Memory T and B cells provide rapid recall protection against re-infection.',
+    prompt:'→ Drag the neutrophil to complete the resolution cycle.',
+    buildScene:buildBacStage3,
+    trayIds:['neutrophil','cd4','memory','antibody'],
+    dropZones:[
+      {id:'dz-bres',cx:520,cy:160,r:40,accepts:['neutrophil'],correctMsg:'✓ IL-17A → G-CSF → sustained neutrophil supply from bone marrow reserve'},
+      {id:'dz-bmem',cx:430,cy:145,r:36,accepts:['memory'],correctMsg:'✓ Memory T cells — rapid Th17 recall on re-infection'},
+    ],
+    wrongMsgs:{cd4:'✗ CD4+ T cells are already active — drag memory or neutrophil instead',antibody:'✗ IgG opsonins are already present in the blood vessel — check the other drop zones'},
+    resultEmoji:'🏆',resultTitle:'Bacterial infection resolved',
+    resultMsg:'The acute neutrophilic response cleared the bulk of bacteria. Th17 cells provide ongoing mucosal and skin defence. Opsonizing IgG and memory T cells ensure rapid protection on re-exposure — the basis of vaccine-induced immunity against encapsulated bacteria.',
+  },
+];
