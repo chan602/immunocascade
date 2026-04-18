@@ -1416,7 +1416,7 @@ Be direct, use proper immunology terminology, keep each paragraph to 2-3 sentenc
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'X-Secret':'Biz11Start!',
+        'X-Secret':'3w-daskinvoden',
       },
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',
@@ -1425,15 +1425,25 @@ Be direct, use proper immunology terminology, keep each paragraph to 2-3 sentenc
       })
     });
     const data=await res.json();
-    const text=data.content?.[0]?.text||'Unable to get feedback. Please try again.';
+    console.log('[immunocascade] proxy response status:',res.status,'body:',JSON.stringify(data).slice(0,400));
+    // Handle both direct Anthropic shape {content:[{text}]} and possible proxy wrapper {response:{content:[{text}]}}
+    const text=
+      data?.content?.[0]?.text ||
+      data?.response?.content?.[0]?.text ||
+      data?.text ||
+      data?.message ||
+      (typeof data==='string'?data:null) ||
+      'Unable to get feedback — check console for response details.';
+    if(!res.ok) throw new Error(`HTTP ${res.status}: ${JSON.stringify(data).slice(0,200)}`);
     loading.style.display='none';
     accEl.textContent=`${pct}% accuracy — ${correctLinks} correct, ${wrongLinks} incorrect`;
     accEl.style.color=pct>=80?'#10B981':pct>=50?'#F59E0B':'#EF4444';
     textEl.textContent=text;
     result.style.display='block';
   }catch(err){
+    console.error('[immunocascade] eval error:',err);
     loading.style.display='none';
-    textEl.textContent='Could not reach AI feedback service. Check your connection and try again.';
+    textEl.textContent=`Error: ${err.message}. Check the browser console (F12) for details.`;
     accEl.textContent=`${pct}% accuracy`;
     result.style.display='block';
   }finally{
