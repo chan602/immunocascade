@@ -24,16 +24,20 @@ function saveP(d){localStorage.setItem(SAVE,JSON.stringify(d));}
 
 // Active level ID and stage list — set by startLevel()
 let currentLevel='flu';
-function getStages(){return currentLevel==='bacterial'?STAGES_BACTERIAL:STAGES;}
+function getStages(){
+  if(currentLevel==='bacterial') return STAGES_BACTERIAL;
+  if(currentLevel==='covid')     return STAGES_COVID;
+  return STAGES;
+}
 
 let stageIdx=0,placed={},dzMet={},dragging=null;
 
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function goHome(){showScreen('title-screen');}
 function startLevel(id){
-  if(id!=='flu'&&id!=='bacterial')return;
+  if(id!=='flu'&&id!=='bacterial'&&id!=='covid')return;
   currentLevel=id;
-  const lvlName=id==='flu'?'Level 1 — Influenza':'Level 2 — Bacterial';
+  const lvlName={flu:'Level 1 — Influenza',bacterial:'Level 2 — Bacterial',covid:'Level 3 — COVID-19'}[id];
   document.getElementById('gb-name').textContent=lvlName;
   resetGame();showScreen('game-screen');
 }
@@ -214,6 +218,16 @@ const LEVEL_COMPLETE={
       'DC/Th17 → IL-17A → G-CSF → sustained neutrophil reserve',
     ],
   },
+  covid:{
+    title:'Level 3 Complete',
+    sub:'You\'ve mapped the SARS-CoV-2 immune response — from ACE2 entry to neutralizing antibody protection.',
+    concepts:[
+      'Spike RBD → ACE2/TMPRSS2 entry → IFN-I suppression (ORF3a, NSP1, PLpro)',
+      'Delayed IFN → hyperactivated macrophage → IL-6/TNF-α/CXCL10 cytokine storm → ARDS',
+      'PD-L1↑ on infected cells → PD-1 engagement → CD8+ T cell exhaustion + lymphopenia',
+      'Anti-RBD nAb + memory B/T cells → durable protection (vaccine correlate)',
+    ],
+  },
 };
 
 function showComplete(){
@@ -231,11 +245,13 @@ function showComplete(){
     const tab=document.getElementById('tab-canvas');
     if(tab) tab.textContent='Canvas';
   }
-  // Unlock Level 2 card after Level 1
-  if(currentLevel==='flu'){
-    const lv2=document.getElementById('lv2-card');
-    if(lv2){lv2.classList.remove('locked');lv2.onclick=()=>startLevel('bacterial');}
-    const badge=document.getElementById('lv2-badge');
+  // Unlock next level card
+  const unlocks={flu:'lv2',bacterial:'lv3'};
+  const nextId=unlocks[currentLevel];
+  if(nextId){
+    const card=document.getElementById(nextId+'-card');
+    if(card){card.classList.remove('locked');card.onclick=()=>startLevel(nextId==='lv2'?'bacterial':'covid');}
+    const badge=document.getElementById(nextId+'-badge');
     if(badge){badge.textContent='Available';badge.className='lc-badge badge-open';}
   }
 }
@@ -275,28 +291,29 @@ function hideFb(){document.getElementById('feedback-bar').classList.remove('show
 /* INIT */
 (function(){
   const prog=loadP();
-  // Restore flu progress bar
-  if(prog.flu){
-    const n=Object.keys(prog.flu).filter(k=>k.startsWith('stage')).length;
-    const fill=document.getElementById('prog-flu');
-    if(fill)fill.style.width=Math.round((n/STAGES.length)*100)+'%';
-    if(prog.flu.levelComplete){
-      const tab=document.getElementById('tab-canvas'); if(tab) tab.textContent='Canvas';
-    }
-  }
-  // Restore bacterial progress bar
-  if(prog.bacterial){
-    const n=Object.keys(prog.bacterial).filter(k=>k.startsWith('stage')).length;
-    const fill=document.getElementById('prog-bacterial');
-    if(fill)fill.style.width=Math.round((n/STAGES_BACTERIAL.length)*100)+'%';
-  }
-  // Unlock Level 2 card if Level 1 complete
+  const restoreBar=(key,barId,stages)=>{
+    if(!prog[key])return;
+    const n=Object.keys(prog[key]).filter(k=>k.startsWith('stage')).length;
+    const fill=document.getElementById(barId);
+    if(fill)fill.style.width=Math.round((n/stages.length)*100)+'%';
+  };
+  restoreBar('flu',       'prog-flu',        STAGES);
+  restoreBar('bacterial', 'prog-bacterial',   STAGES_BACTERIAL);
+  restoreBar('covid',     'prog-covid',       STAGES_COVID);
+
+  // Restore canvas tab unlock
   if(prog.flu?.levelComplete){
-    const lv2=document.getElementById('lv2-card');
-    if(lv2){lv2.classList.remove('locked');lv2.onclick=()=>startLevel('bacterial');}
-    const badge=document.getElementById('lv2-badge');
-    if(badge){badge.textContent='Available';badge.className='lc-badge badge-open';}
+    const tab=document.getElementById('tab-canvas'); if(tab) tab.textContent='Canvas';
   }
+  // Restore level card unlocks
+  const unlockCard=(cardId,badgeId,levelId)=>{
+    const card=document.getElementById(cardId);
+    if(card){card.classList.remove('locked');card.onclick=()=>startLevel(levelId);}
+    const badge=document.getElementById(badgeId);
+    if(badge){badge.textContent='Available';badge.className='lc-badge badge-open';}
+  };
+  if(prog.flu?.levelComplete)       unlockCard('lv2-card','lv2-badge','bacterial');
+  if(prog.bacterial?.levelComplete) unlockCard('lv3-card','lv3-badge','covid');
 })();
 
 /* ── TOUCH SUPPORT ── */

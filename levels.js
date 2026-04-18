@@ -431,7 +431,259 @@ const STAGES=[
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LEVEL 2 — BACTERIAL (Staphylococcus aureus / Gram-positive)
+// LEVEL 3 — COVID-19 (SARS-CoV-2)
+//
+// Key immunological themes distinct from Level 1 (flu):
+//   - Spike/ACE2 entry into type II pneumocytes, not ciliated epithelium
+//   - Active IFN-I suppression (ORF3a, NSP1, PLpro antagonists)
+//   - Delayed but explosive cytokine storm (IL-6, IL-1β, TNF, CXCL10)
+//   - T cell exhaustion / lymphopenia in severe disease
+//   - Neutralizing antibody targets: RBD of spike
+// ─────────────────────────────────────────────────────────────────────────────
+
+function baseLung(root){
+  // Alveolar space — blue-grey, type I/II pneumocytes lining the walls
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#0a1628'}));
+  // Alveolar wall — curved at top and bottom
+  root.appendChild(e('path',{d:'M0 60 Q170 20 340 55 Q510 90 680 50 L680 0 L0 0 Z',fill:'#0f2240',opacity:'.9'}));
+  root.appendChild(e('path',{d:'M0 240 Q170 275 340 245 Q510 215 680 255 L680 300 L0 300 Z',fill:'#0f2240',opacity:'.9'}));
+  // Alveolar space label
+  txt(root,'ALVEOLAR SPACE',340,18,'7.5','rgba(147,197,253,.4)','middle');
+  // Type I pneumocytes — thin squamous cells lining the wall
+  [60,160,260,360,460,560].forEach(x=>{
+    root.appendChild(e('ellipse',{cx:x,cy:58,rx:44,ry:10,fill:'#1e3a5f',stroke:'#1d4ed8','stroke-width':'0.8',opacity:'.7'}));
+  });
+  [60,160,260,360,460,560].forEach(x=>{
+    root.appendChild(e('ellipse',{cx:x,cy:242,rx:44,ry:10,fill:'#1e3a5f',stroke:'#1d4ed8','stroke-width':'0.8',opacity:'.7'}));
+  });
+  txt(root,'TYPE I PNEUMOCYTES',14,46,'6.5','rgba(29,78,216,.55)');
+  // Capillary on right
+  root.appendChild(e('rect',{x:604,y:0,width:76,height:300,fill:'#4a1515',opacity:'.8'}));
+  root.appendChild(e('line',{x1:604,y1:0,x2:604,y2:300,stroke:'#6b2020','stroke-width':'2.5'}));
+  txt(root,'BLOOD',634,90,'7','#6b2020','middle');
+  // Type II pneumocyte (cuboidal, surfactant-producing) — ACE2-high
+  root.appendChild(e('rect',{x:260,y:44,width:28,height:20,rx:4,fill:'#1d4ed8',stroke:'#3b82f6','stroke-width':'1',opacity:'.8'}));
+  txt(root,'type II',274,40,'6.5','rgba(59,130,246,.6)','middle');
+}
+
+function buildCovStage0(root){
+  baseLung(root);
+  txt(root,'SARS-CoV-2 ENTRY — Day 0–2',340,18,'8','rgba(251,191,36,.55)','middle');
+
+  // SARS-CoV-2 virions in alveolar space
+  [[130,105],[220,130],[350,95],[470,115]].forEach(([cx,cy],i)=>{
+    const vg=e('g'); vg.style.animation=`spinSlow ${10+i*3}s linear infinite${i%2?' reverse':''}`; vg.style.transformOrigin=`${cx}px ${cy}px`;
+    drawCoronavirus(vg,cx,cy,18); root.appendChild(vg);
+  });
+
+  // ACE2 receptor on type II pneumocyte — spike binding
+  const acG=e('g'); acG.style.animation='floatY 3s ease-in-out infinite'; acG.style.transformOrigin='274px 120px';
+  drawACE2(acG,274,120,22); root.appendChild(acG);
+
+  // Spike binding arrow
+  const bindArr=e('path',{d:'M220 118 Q248 112 255 112',fill:'none',stroke:'#D97706','stroke-width':'1.3','stroke-dasharray':'4 3','marker-end':'url(#arr)',opacity:'.8'});
+  bindArr.style.animation='dashFlow 1.5s linear infinite'; root.appendChild(bindArr);
+  txt(root,'Spike RBD → ACE2',238,104,'7','rgba(217,119,6,.7)','middle');
+  txt(root,'TMPRSS2 cleavage',238,113,'6.5','rgba(217,119,6,.5)','middle');
+
+  // IFN suppression — X mark over IFN signal
+  const ifnG=e('g'); ifnG.style.animation='pulse 2s ease-in-out infinite'; ifnG.style.transformOrigin='460px 175px';
+  drawCytokine(ifnG,460,170,16); root.appendChild(ifnG);
+  // Red X over IFN
+  root.appendChild(e('line',{x1:445,y1:155,x2:475,y2:185,stroke:'#DC2626','stroke-width':'2.5','stroke-linecap':'round',opacity:'.85'}));
+  root.appendChild(e('line',{x1:475,y1:155,x2:445,y2:185,stroke:'#DC2626','stroke-width':'2.5','stroke-linecap':'round',opacity:'.85'}));
+  txt(root,'IFN-I suppressed',460,196,'7.5','rgba(220,38,38,.7)','middle');
+  txt(root,'ORF3a · NSP1 · PLpro',460,206,'6.5','rgba(220,38,38,.5)','middle');
+
+  // Viral replication arrow
+  const repArr=e('path',{d:'M288 115 Q340 110 380 118',fill:'none',stroke:'rgba(251,191,36,.6)','stroke-width':'1.1','stroke-dasharray':'4 3','marker-end':'url(#arr)',opacity:'.6'});
+  repArr.style.animation='dashFlow 2s linear infinite'; root.appendChild(repArr);
+  txt(root,'unchecked replication',340,108,'7','rgba(251,191,36,.5)','middle');
+  txt(root,'(IFN delay → viral load ↑↑)',340,117,'6.5','rgba(251,191,36,.35)','middle');
+
+  txt(root,'drag ACE2 receptor to the pneumocyte entry site',340,268,'7','rgba(217,119,6,.35)','middle');
+}
+
+function buildCovStage1(root){
+  baseLung(root);
+  txt(root,'CYTOKINE STORM — Day 6–12',340,18,'8','rgba(220,38,38,.65)','middle');
+  txt(root,'delayed IFN-I + hyperactivated macrophages → IL-6, TNF-α, CXCL10 surge',340,30,'6.5','rgba(220,38,38,.35)','middle');
+
+  // Dying infected cells (lytic)
+  [[140,110],[185,95],[160,135]].forEach(([cx,cy])=>{
+    root.appendChild(e('ellipse',{cx,cy,rx:20,ry:15,fill:'rgba(220,38,38,.2)',stroke:'#DC2626','stroke-width':'1','stroke-dasharray':'3 2'}));
+    for(let a=0;a<6;a++){
+      const ang=(a/6)*Math.PI*2;
+      root.appendChild(e('line',{x1:cx+Math.cos(ang)*18,y1:cy+Math.sin(ang)*14,x2:cx+Math.cos(ang)*26,y2:cy+Math.sin(ang)*20,stroke:'#EF4444','stroke-width':'0.8',opacity:'.4','stroke-linecap':'round'}));
+    }
+  });
+  txt(root,'infected cells lysing',165,160,'7','rgba(220,38,38,.5)','middle');
+
+  // Hyperactivated macrophage — large, central
+  const mG=e('g'); mG.style.animation='floatY 3s ease-in-out infinite'; mG.style.transformOrigin='340px 158px';
+  drawMacrophage(mG,340,158,32);
+  txt(mG,'hyperactivated',340,200,'7.5','#FDE68A','middle');
+  txt(mG,'macrophage',340,210,'7.5','#FDE68A','middle');
+  root.appendChild(mG);
+
+  // Cytokine burst radiating out — multiple cytokines
+  const storms=[
+    [250,110,'IL-6'],[420,105,'TNF-α'],[260,210,'IL-1β'],[415,215,'CXCL10'],[200,160,'IL-8'],[480,160,'IL-12'],
+  ];
+  storms.forEach(([cx,cy,label],i)=>{
+    const cg=e('g'); cg.style.animation=`pulse ${1.5+i*.2}s ease-in-out infinite ${i*.15}s`;
+    cg.style.transformOrigin=`${cx}px ${cy}px`;
+    drawCytokine(cg,cx,cy,12); root.appendChild(cg);
+    txt(root,label,cx,cy+22,'6.5','rgba(244,114,182,.65)','middle');
+    // Arrow from macrophage to cytokine
+    const arr=e('path',{d:`M${340+Math.sign(cx-340)*35} ${158+Math.sign(cy-158)*35} Q${(340+cx)/2} ${(158+cy)/2} ${cx} ${cy}`,
+      fill:'none',stroke:'rgba(244,114,182,.35)','stroke-width':'0.8','stroke-dasharray':'3 2','marker-end':'url(#arr)',opacity:'.5'});
+    arr.style.animation='dashFlow 2s linear infinite'; root.appendChild(arr);
+  });
+
+  // ARDS label
+  txt(root,'ARDS risk: vascular leak · fibrin deposition · hyaline membranes',340,268,'7','rgba(220,38,38,.45)','middle');
+}
+
+function buildCovStage2(root){
+  baseLung(root);
+  txt(root,'T CELL EXHAUSTION & LYMPHOPENIA — Day 10–14',340,18,'7.5','rgba(109,40,217,.6)','middle');
+  txt(root,'PD-L1 upregulation on infected cells → PD-1 on T cells → functional exhaustion',340,30,'6','rgba(109,40,217,.35)','middle');
+
+  // Infected cell expressing PD-L1
+  root.appendChild(e('ellipse',{cx:220,cy:155,rx:32,ry:26,fill:'rgba(220,38,38,.15)',stroke:'#DC2626','stroke-width':'1.2','stroke-dasharray':'3 2'}));
+  root.appendChild(e('ellipse',{cx:220,cy:155,rx:14,ry:11,fill:'rgba(220,38,38,.3)'}));
+  txt(root,'infected cell',220,190,'7','rgba(220,38,38,.55)','middle');
+  txt(root,'PD-L1↑  MHC-I↓',220,200,'6.5','rgba(220,38,38,.4)','middle');
+
+  // PD-1/PD-L1 checkpoint interaction
+  const pdArr=e('path',{d:'M252 152 Q310 145 340 148',fill:'none',stroke:'rgba(220,38,38,.6)','stroke-width':'1.2','stroke-dasharray':'4 3','marker-end':'url(#arr-r)',opacity:'.7'});
+  pdArr.style.animation='dashFlow 1.5s linear infinite'; root.appendChild(pdArr);
+  txt(root,'PD-L1 : PD-1',295,137,'7','rgba(220,38,38,.55)','middle');
+  txt(root,'checkpoint engagement',295,146,'6.5','rgba(220,38,38,.4)','middle');
+
+  // Exhausted T cells
+  [[370,148],[430,138],[490,150]].forEach(([cx,cy],i)=>{
+    const eg=e('g'); eg.style.animation=`floatY ${3+i*.5}s ease-in-out infinite ${i*.4}s`; eg.style.transformOrigin=`${cx}px ${cy}px`;
+    drawExhaustedT(eg,cx,cy,22); root.appendChild(eg);
+  });
+  txt(root,'exhausted CD8+ T cells',430,195,'7.5','rgba(109,40,217,.6)','middle');
+  txt(root,'PD-1↑  TIM-3↑  LAG-3↑  IFN-γ↓',430,205,'7','rgba(109,40,217,.45)','middle');
+
+  // Lymphopenia — fading normal cells in background
+  [[100,180],[140,160],[90,210]].forEach(([cx,cy])=>{
+    const g=e('g'); g.setAttribute('opacity','.2'); drawCD8(g,cx,cy,14); root.appendChild(g);
+  });
+  txt(root,'lymphopenia: CD4/CD8 count ↓↓',150,235,'7','rgba(109,40,217,.45)','middle');
+
+  // IL-6 → JAK/STAT3 amplification loop
+  const ck=e('g'); ck.style.animation='pulse 2s ease-in-out infinite'; ck.style.transformOrigin='530px 190px';
+  drawCytokine(ck,530,190,14); root.appendChild(ck);
+  txt(root,'IL-6 → JAK/STAT3',530,215,'7','rgba(244,114,182,.55)','middle');
+  txt(root,'→ PD-L1 ↑ loop',530,224,'6.5','rgba(244,114,182,.4)','middle');
+
+  txt(root,'drag the exhausted T cell into the checkpoint zone',340,268,'7','rgba(217,119,6,.35)','middle');
+}
+
+function buildCovStage3(root){
+  baseLung(root);
+  txt(root,'NEUTRALIZATION & RESOLUTION — Day 14–28',340,18,'7.5','rgba(16,185,129,.55)','middle');
+  txt(root,'nAb → RBD blockade · convalescent T cells · lung repair',340,30,'6.5','rgba(16,185,129,.3)','middle');
+
+  // Fading virions (mostly cleared)
+  [[140,100],[280,85]].forEach(([cx,cy])=>{
+    const vg=e('g'); vg.setAttribute('opacity','.18'); drawCoronavirus(vg,cx,cy,14); root.appendChild(vg);
+  });
+
+  // Neutralizing antibodies blocking spike
+  [[200,130],[160,110],[230,115]].forEach(([cx,cy],i)=>{
+    const ag=e('g'); ag.style.animation=`floatY ${2.5+i*.4}s ease-in-out infinite ${i*.3}s`;
+    ag.style.transformOrigin=`${cx}px ${cy}px`;
+    drawAntibody(ag,cx,cy,14); root.appendChild(ag);
+  });
+  txt(root,'nAb: anti-RBD IgG',195,162,'7.5','rgba(244,114,182,.65)','middle');
+  txt(root,'blocks ACE2 binding',195,172,'7','rgba(244,114,182,.45)','middle');
+
+  // Recovered CD8+ T cells
+  const recT=e('g'); recT.style.animation='floatY 3s ease-in-out infinite 0.5s'; recT.style.transformOrigin='380px 155px';
+  drawCD8(recT,380,155,26);
+  txt(recT,'recovered CTL',380,190,'7.5','#C4B5FD','middle');
+  txt(recT,'IFN-γ restored',380,200,'7','rgba(196,181,253,.55)','middle');
+  root.appendChild(recT);
+
+  // Memory B cell
+  const memB=e('g'); memB.style.animation='floatY 4s ease-in-out infinite 1s'; memB.style.transformOrigin='480px 148px';
+  drawMemory(memB,480,148,24);
+  txt(memB,'memory B cell',480,182,'7.5','rgba(167,243,208,.7)','middle');
+  txt(memB,'RBD-specific',480,192,'7','rgba(167,243,208,.45)','middle');
+  root.appendChild(memB);
+
+  // Lung repair — type II → type I pneumocyte regeneration
+  root.appendChild(e('rect',{x:260,y:44,width:28,height:20,rx:4,fill:'#065f46',stroke:'#10B981','stroke-width':'1',opacity:'.6'}));
+  txt(root,'type II → I repair',274,40,'6.5','rgba(16,185,129,.6)','middle');
+  const repArr=e('path',{d:'M274 64 Q274 80 274 100',fill:'none',stroke:'rgba(16,185,129,.5)','stroke-width':'1','stroke-dasharray':'3 2','marker-end':'url(#arr-g)',opacity:'.6'});
+  repArr.style.animation='dashFlow 2s linear infinite'; root.appendChild(repArr);
+
+  // Long COVID note
+  txt(root,'~10% develop long COVID: persistent inflammation, microclots, viral reservoir',340,265,'7','rgba(217,119,6,.4)','middle');
+  txt(root,'memory T + B cells provide durable protection (vaccine basis)',340,275,'6.5','rgba(16,185,129,.38)','middle');
+}
+
+const STAGES_COVID=[
+  {
+    id:'c0',tlIndex:0,day:'Day 0–2',dayNum:'0–2d',
+    narr:'SARS-CoV-2 spike protein binds <strong style="color:#F59E0B">ACE2</strong> on type II pneumocytes (high ACE2 expression in lower respiratory tract). TMPRSS2 cleaves spike, enabling membrane fusion. Critically, viral proteins (ORF3a, NSP1, PLpro) <strong style="color:#F59E0B">actively suppress IFN-I signalling</strong> — unlike influenza, this delays the innate alarm, allowing unchecked early replication.',
+    prompt:'→ Drag the ACE2 receptor to the pneumocyte to initiate viral entry.',
+    buildScene:buildCovStage0,
+    trayIds:['ace2','coronavirus','macrophage','tlr7'],
+    dropZones:[
+      {id:'dz-c0',cx:274,cy:120,r:38,accepts:['ace2'],correctMsg:'✓ ACE2 on type II pneumocyte — spike RBD binds → TMPRSS2 cleavage → membrane fusion → IFN-I suppressed'},
+    ],
+    wrongMsgs:{coronavirus:'✗ The virus is already present — ACE2 is the host receptor that enables entry',macrophage:'✗ Macrophages arrive later — ACE2 on pneumocytes is the initial entry point',tlr7:'✗ TLR7 detects the virus after entry — ACE2 enables the entry itself'},
+    resultEmoji:'🦠',resultTitle:'Viral entry established',
+    resultMsg:'SARS-CoV-2 enters type II pneumocytes via ACE2/TMPRSS2. IFN-I production is actively blocked by viral proteins. This silent early replication phase — absent in influenza — is why COVID-19 peaks later and more severely.',
+  },
+  {
+    id:'c1',tlIndex:1,day:'Day 6–12',dayNum:'6–12d',
+    narr:'The delayed IFN-I response finally triggers, but viral load is already high. Hyperactivated macrophages and monocytes produce a massive surge of <strong style="color:#F59E0B">IL-6, TNF-α, IL-1β, and CXCL10</strong>. This cytokine storm drives vascular leak, fibrin deposition, and ARDS. IL-6 in particular signals through JAK/STAT3 and is the target of tocilizumab therapy.',
+    prompt:'→ Drag the macrophage into the alveolus to trigger cytokine release.',
+    buildScene:buildCovStage1,
+    trayIds:['macrophage','neutrophil','cytokine','dendritic'],
+    dropZones:[
+      {id:'dz-c1',cx:340,cy:158,r:44,accepts:['macrophage'],correctMsg:'✓ Hyperactivated macrophage → IL-6, TNF-α, IL-1β, CXCL10 storm → vascular leak → ARDS'},
+    ],
+    wrongMsgs:{neutrophil:'✗ Neutrophils contribute to lung damage but macrophages drive the cytokine storm',cytokine:'✗ Cytokines are the output — drag the macrophage that produces them',dendritic:'✗ DCs prime T cells but are not the primary cytokine storm driver here'},
+    resultEmoji:'🌪️',resultTitle:'Cytokine storm',
+    resultMsg:'Macrophage hyperactivation drives a pathological cytokine surge. IL-6 is the key mediator targetable by tocilizumab. CXCL10 predicts severity. Vascular leak and ARDS emerge from endothelial damage, not direct viral injury.',
+  },
+  {
+    id:'c2',tlIndex:2,day:'Day 10–14',dayNum:'10–14d',
+    narr:'Prolonged IL-6 signalling upregulates <strong style="color:#F59E0B">PD-L1</strong> on infected cells. Sustained antigen exposure drives CD8+ T cells into exhaustion — characterised by upregulation of <strong style="color:#F59E0B">PD-1, TIM-3, and LAG-3</strong>, and loss of IFN-γ production. CD4 and CD8 counts fall (lymphopenia). This impairs viral clearance and is associated with severe and critical disease.',
+    prompt:'→ Drag the exhausted T cell into the checkpoint zone.',
+    buildScene:buildCovStage2,
+    trayIds:['exhaustedT','cd8','cd4','memory'],
+    dropZones:[
+      {id:'dz-c2',cx:430,cy:148,r:48,accepts:['exhaustedT'],correctMsg:'✓ Exhausted CD8+ T cell — PD-1↑ TIM-3↑ LAG-3↑ IFN-γ↓ → impaired viral clearance'},
+    ],
+    wrongMsgs:{cd8:'✗ Functional CD8+ cells are depleted in severe COVID — drag the exhausted T cell',cd4:'✗ CD4+ T cells are also lymphopenic but exhausted CD8+ CTLs are the key effectors here',memory:'✗ Memory cells form after recovery — exhaustion precedes that in severe disease'},
+    resultEmoji:'😮',resultTitle:'T cell exhaustion',
+    resultMsg:'PD-1/PD-L1 engagement silences CD8+ CTLs. Lymphopenia correlates with disease severity. Anti-PD-1 checkpoint blockade (e.g. pembrolizumab) has been explored therapeutically. Recovery requires re-invigoration of exhausted T cells.',
+  },
+  {
+    id:'c3',tlIndex:3,day:'Day 14–28',dayNum:'14–28d',
+    narr:'Potent <strong style="color:#F59E0B">anti-RBD neutralizing IgG</strong> (nAb) blocks spike–ACE2 interaction and is the primary correlate of protection. Convalescent CD8+ T cells recover IFN-γ production. Type II pneumocytes regenerate type I cells to repair the alveolar epithelium. Long COVID affects ~10% — proposed mechanisms include viral reservoir, microclots, and persistent low-level inflammation.',
+    prompt:'→ Drag the memory cell to complete long-term protection.',
+    buildScene:buildCovStage3,
+    trayIds:['memory','antibody','cd8','plasma'],
+    dropZones:[
+      {id:'dz-c3m',cx:480,cy:148,r:38,accepts:['memory'],correctMsg:'✓ Memory B cell — RBD-specific, long-lived; rapid nAb recall on re-exposure'},
+      {id:'dz-c3a',cx:195,cy:140,r:42,accepts:['antibody'],correctMsg:'✓ Anti-RBD IgG — neutralizes by blocking spike:ACE2 → primary vaccine correlate of protection'},
+    ],
+    wrongMsgs:{cd8:'✗ Drag memory or antibody — CD8 CTLs are already recovering in the scene',plasma:'✗ Plasma cells produced the antibodies already — drag the secreted IgG or memory cell'},
+    resultEmoji:'🏆',resultTitle:'Resolved with immunity',
+    resultMsg:'Anti-RBD nAbs and memory B/T cells provide durable protection. mRNA vaccines (BNT162b2, mRNA-1273) mimic this response by expressing spike in muscle cells, generating high-titre nAbs before infection. Long COVID remains under active investigation.',
+  },
+];
 //
 // Scene coordinate system: viewBox 0 0 680 300 (same as Level 1).
 // New cell assets: drawBacteria, drawNeutrophil, drawComplement (cells.js).

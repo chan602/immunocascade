@@ -354,21 +354,113 @@ function drawComplement(g,cx,cy,s){
   l.textContent='C3b'; g.appendChild(l);
 }
 
+// ─────────────────────────────────────────────
+// LEVEL 3 — COVID-19 ASSETS
+// ─────────────────────────────────────────────
+
+function drawCoronavirus(g,cx,cy,s){
+  // SARS-CoV-2: large lipid envelope with distinctive club-shaped spike proteins (S).
+  // Also shows M (membrane) and E (envelope) proteins as short bumps.
+  // Genome hint: ssRNA coil inside.
+  const r=s*.34;
+  // Lipid envelope
+  g.appendChild(e('circle',{cx,cy,r:r+s*.05,fill:'rgba(251,191,36,.15)',stroke:'#F59E0B','stroke-width':'1','stroke-dasharray':'3 2',opacity:'.5'}));
+  g.appendChild(e('circle',{cx,cy,r,fill:'#FEF3C7',stroke:'#D97706','stroke-width':'1.8'}));
+  // ssRNA genome coil
+  g.appendChild(e('path',{d:`M${cx-s*.14},${cy} Q${cx-s*.06},${cy-s*.14} ${cx},${cy-s*.1} Q${cx+s*.08},${cy-s*.06} ${cx+s*.12},${cy+s*.04} Q${cx+s*.06},${cy+s*.14} ${cx},${cy+s*.1} Q${cx-s*.08},${cy+s*.04} ${cx-s*.12},${cy-s*.04}`,fill:'none',stroke:'#92400E','stroke-width':'1',opacity:'.55'}));
+  // Spike proteins — 8 club-shaped spikes (S protein trimer)
+  for(let i=0;i<8;i++){
+    const a=(i/8)*Math.PI*2;
+    const sx1=cx+Math.cos(a)*r, sy1=cy+Math.sin(a)*r;
+    const sx2=cx+Math.cos(a)*(r+s*.18), sy2=cy+Math.sin(a)*(r+s*.18);
+    // Stalk
+    g.appendChild(e('line',{x1:sx1,y1:sy1,x2:sx2,y2:sy2,stroke:'#B45309','stroke-width':'1.3','stroke-linecap':'round'}));
+    // Club head (RBD)
+    g.appendChild(e('ellipse',{cx:sx2,cy:sy2,rx:s*.065,ry:s*.045,fill:'#D97706',stroke:'#92400E','stroke-width':'0.8',
+      transform:`rotate(${Math.atan2(Math.sin(a),Math.cos(a))*180/Math.PI+90} ${sx2} ${sy2})`}));
+  }
+  // M proteins — short bumps between spikes
+  for(let i=0;i<8;i++){
+    const a=((i+0.5)/8)*Math.PI*2;
+    const mx=cx+Math.cos(a)*(r+s*.07), my=cy+Math.sin(a)*(r+s*.07);
+    g.appendChild(e('circle',{cx:mx,cy:my,r:s*.03,fill:'#F59E0B',opacity:'.7'}));
+  }
+}
+
+function drawACE2(g,cx,cy,s){
+  // ACE2 receptor: type I transmembrane protein.
+  // Shown as an extracellular domain (large oval, zinc-binding active site hint)
+  // + single transmembrane helix passing through a membrane line
+  // + short intracellular tail.
+  const memY=cy+s*.08;
+  // Membrane band
+  g.appendChild(e('rect',{x:cx-s*.42,y:memY-s*.06,width:s*.84,height:s*.12,rx:s*.04,fill:'#7C3AED',opacity:'.18'}));
+  g.appendChild(e('rect',{x:cx-s*.42,y:memY-s*.06,width:s*.84,height:s*.12,rx:s*.04,fill:'none',stroke:'#7C3AED','stroke-width':'0.8',opacity:'.4'}));
+  // Transmembrane helix — zigzag through membrane
+  const hx=cx+s*.1;
+  g.appendChild(e('line',{x1:hx,y1:memY-s*.35,x2:hx,y2:memY+s*.2,stroke:'#6D28D9','stroke-width':s*.09,'stroke-linecap':'round'}));
+  // Extracellular domain — large lobe
+  g.appendChild(e('ellipse',{cx:cx-s*.06,cy:memY-s*.3,rx:s*.24,ry:s*.2,fill:'#DDD6FE',stroke:'#7C3AED','stroke-width':'1.5'}));
+  // Zinc ion at active site
+  g.appendChild(e('circle',{cx:cx-s*.06,cy:memY-s*.3,r:s*.055,fill:'#A78BFA',stroke:'#6D28D9','stroke-width':'1'}));
+  const zl=e('text',{x:cx-s*.06,y:memY-s*.3,fill:'#4C1D95','text-anchor':'middle','dominant-baseline':'central','font-size':s*.1,'font-weight':'700','font-family':'sans-serif'});
+  zl.textContent='Zn'; g.appendChild(zl);
+  // ACE2 label
+  const al=e('text',{x:cx-s*.06,y:memY-s*.54,fill:'#7C3AED','text-anchor':'middle','font-size':s*.13,'font-weight':'700','font-family':'sans-serif'});
+  al.textContent='ACE2'; g.appendChild(al);
+  // Intracellular tail stub
+  g.appendChild(e('line',{x1:hx,y1:memY+s*.06,x2:hx,y2:memY+s*.25,stroke:'#5B21B6','stroke-width':s*.07,'stroke-linecap':'round'}));
+}
+
+function drawExhaustedT(g,cx,cy,s){
+  // Exhausted T cell: CD8+ base with overlaid inhibitory receptor markers
+  // (PD-1, TIM-3, LAG-3) shown as blunted/capped surface spines.
+  // Muted colours vs normal CD8 to signal dysfunction.
+  const r=s*.35;
+  // Cell body — desaturated purple
+  g.appendChild(e('circle',{cx,cy,r,fill:'#C4B5FD',stroke:'#6D28D9','stroke-width':'1.5',opacity:'.65'}));
+  g.appendChild(e('circle',{cx,cy,r:s*.18,fill:'#4C1D95',opacity:'.4'}));
+  // Normal TCR spines (3, muted)
+  [[s*.35,0],[s*.25,-s*.24],[s*.25,s*.24]].forEach(([dx,dy])=>{
+    const a=Math.atan2(dy,dx),x1=cx+Math.cos(a)*r,y1=cy+Math.sin(a)*r,x2=cx+Math.cos(a)*(r+s*.18),y2=cy+Math.sin(a)*(r+s*.18);
+    g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#7C3AED','stroke-width':'1.2',opacity:'.5','stroke-linecap':'round'}));
+  });
+  // Inhibitory receptors — blunted red-capped spines
+  [[-s*.35,0],[-s*.25,-s*.24],[-s*.25,s*.24],[0,-s*.35]].forEach(([dx,dy])=>{
+    const a=Math.atan2(dy,dx),x1=cx+Math.cos(a)*r,y1=cy+Math.sin(a)*r,x2=cx+Math.cos(a)*(r+s*.15),y2=cy+Math.sin(a)*(r+s*.15);
+    g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#DC2626','stroke-width':'1.3','stroke-linecap':'round',opacity:'.75'}));
+    // Red blunt cap — inhibitory
+    g.appendChild(e('line',{x1:x2-Math.cos(a+Math.PI/2)*s*.06,y1:y2-Math.sin(a+Math.PI/2)*s*.06,
+      x2:x2+Math.cos(a+Math.PI/2)*s*.06,y2:y2+Math.sin(a+Math.PI/2)*s*.06,
+      stroke:'#DC2626','stroke-width':'1.6','stroke-linecap':'round',opacity:'.8'}));
+  });
+  // PD-1 label
+  const pl=e('text',{x:cx,y:cy+s*.52,fill:'#DC2626','text-anchor':'middle','font-size':s*.13,'font-weight':'700','font-family':'sans-serif'});
+  pl.textContent='PD-1↑'; g.appendChild(pl);
+  // "8" label (faded)
+  const l=e('text',{x:cx,y:cy,fill:'#EDE9FE','text-anchor':'middle','dominant-baseline':'central','font-size':s*.22,'font-weight':'700','font-family':'sans-serif',opacity:'.5'});
+  l.textContent='8'; g.appendChild(l);
+}
+
 const CELL_DEFS={
   // Level 1 — Influenza
-  macrophage:{label:'Macrophage',    draw:drawMacrophage},
-  nkcell:    {label:'NK cell',       draw:drawNK},
-  dendritic: {label:'Dendritic cell',draw:drawDendritic},
-  cd4:       {label:'CD4+ T cell',   draw:drawCD4},
-  cd8:       {label:'CD8+ T cell',   draw:drawCD8},
-  bcell:     {label:'B cell',        draw:drawBcell},
-  plasma:    {label:'Plasma cell',   draw:drawPlasma},
-  memory:    {label:'Memory cell',   draw:drawMemory},
-  antibody:  {label:'IgG antibody',  draw:drawAntibody},
-  tlr7:      {label:'TLR7',          draw:drawTLR},
-  cytokine:  {label:'Cytokine',      draw:drawCytokine},
+  macrophage:  {label:'Macrophage',    draw:drawMacrophage},
+  nkcell:      {label:'NK cell',       draw:drawNK},
+  dendritic:   {label:'Dendritic cell',draw:drawDendritic},
+  cd4:         {label:'CD4+ T cell',   draw:drawCD4},
+  cd8:         {label:'CD8+ T cell',   draw:drawCD8},
+  bcell:       {label:'B cell',        draw:drawBcell},
+  plasma:      {label:'Plasma cell',   draw:drawPlasma},
+  memory:      {label:'Memory cell',   draw:drawMemory},
+  antibody:    {label:'IgG antibody',  draw:drawAntibody},
+  tlr7:        {label:'TLR7',          draw:drawTLR},
+  cytokine:    {label:'Cytokine',      draw:drawCytokine},
   // Level 2 — Bacterial
   bacteria:    {label:'Bacteria',      draw:drawBacteria},
   neutrophil:  {label:'Neutrophil',    draw:drawNeutrophil},
   complement:  {label:'C3b opsonin',   draw:drawComplement},
+  // Level 3 — COVID-19
+  coronavirus: {label:'SARS-CoV-2',   draw:drawCoronavirus},
+  ace2:        {label:'ACE2 receptor', draw:drawACE2},
+  exhaustedT:  {label:'Exhausted T',   draw:drawExhaustedT},
 };
