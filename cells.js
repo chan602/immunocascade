@@ -442,6 +442,220 @@ function drawExhaustedT(g,cx,cy,s){
   l.textContent='8'; g.appendChild(l);
 }
 
+// ─────────────────────────────────────────────
+// LEVEL 4 — ALLERGY ASSETS
+// ─────────────────────────────────────────────
+
+function drawMastCell(g,cx,cy,s){
+  // Mast cell: large, granule-packed. Irregular lobular body packed with
+  // dark metachromatic granules (histamine, tryptase, heparin).
+  // FcεRI receptors on surface shown as Y-shaped IgE-binding spines.
+  const r=s*.38;
+  // Irregular amoeboid outline
+  const pts=[];
+  for(let i=0;i<16;i++){
+    const a=(i/16)*Math.PI*2, rv=r*(0.82+0.18*Math.sin(i*3.1+1.2));
+    pts.push([cx+Math.cos(a)*rv, cy+Math.sin(a)*rv]);
+  }
+  g.appendChild(e('path',{d:'M'+pts.map(p=>p.join(',')).join('L')+'Z',
+    fill:'#FDE8FF',stroke:'#A855F7','stroke-width':'1.8','stroke-linejoin':'round'}));
+  // Granules — dense purple dots throughout cytoplasm
+  [[-s*.14,-s*.12],[s*.1,-s*.16],[s*.18,s*.04],[-s*.06,s*.14],[s*.04,-s*.04],
+   [-s*.18,s*.06],[s*.12,s*.16],[-s*.1,s*.02],[-s*.04,-s*.2],[s*.2,-s*.06]].forEach(([dx,dy])=>{
+    g.appendChild(e('circle',{cx:cx+dx,cy:cy+dy,r:s*.065,fill:'#7E22CE',stroke:'#581C87','stroke-width':'0.6',opacity:'.85'}));
+  });
+  // FcεRI spines — 5 short Y-shaped receptors on surface
+  for(let i=0;i<5;i++){
+    const a=(i/5)*Math.PI*2;
+    const x1=cx+Math.cos(a)*r, y1=cy+Math.sin(a)*r;
+    const x2=cx+Math.cos(a)*(r+s*.16), y2=cy+Math.sin(a)*(r+s*.16);
+    g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#C084FC','stroke-width':'1.3','stroke-linecap':'round'}));
+    // Y fork at tip
+    const perp=Math.atan2(Math.sin(a),Math.cos(a));
+    g.appendChild(e('line',{x1:x2,y1:y2,x2:x2+Math.cos(perp+0.5)*s*.08,y2:y2+Math.sin(perp+0.5)*s*.08,stroke:'#C084FC','stroke-width':'1','stroke-linecap':'round'}));
+    g.appendChild(e('line',{x1:x2,y1:y2,x2:x2+Math.cos(perp-0.5)*s*.08,y2:y2+Math.sin(perp-0.5)*s*.08,stroke:'#C084FC','stroke-width':'1','stroke-linecap':'round'}));
+  }
+}
+
+function drawMastCellDegranulating(g,cx,cy,s){
+  // Mast cell mid-degranulation: ruptured outline, granules exploding outward
+  const r=s*.34;
+  g.appendChild(e('circle',{cx,cy,r,fill:'#FDE8FF',stroke:'#A855F7','stroke-width':'1.5','stroke-dasharray':'5 3'}));
+  // Escaping granules — orbiting outward
+  for(let i=0;i<10;i++){
+    const a=(i/10)*Math.PI*2, dist=r+s*(.12+.18*(i%3)/2);
+    g.appendChild(e('circle',{cx:cx+Math.cos(a)*dist,cy:cy+Math.sin(a)*dist,
+      r:s*.055,fill:'#7E22CE',opacity:(.5+.4*(i%2)).toFixed(1)}));
+  }
+  // Histamine label burst lines
+  for(let i=0;i<6;i++){
+    const a=(i/6)*Math.PI*2;
+    g.appendChild(e('line',{x1:cx+Math.cos(a)*(r+s*.05),y1:cy+Math.sin(a)*(r+s*.05),
+      x2:cx+Math.cos(a)*(r+s*.28),y2:cy+Math.sin(a)*(r+s*.28),
+      stroke:'#E879F9','stroke-width':'1.2','stroke-linecap':'round',opacity:'.6'}));
+  }
+}
+
+function drawIgE(g,cx,cy,s){
+  // IgE antibody: same Y structure as IgG but with an extra Fc domain pair
+  // (IgE has 4 constant heavy-chain domains vs IgG's 3) — shown as a taller stem
+  // with a second domain notch, and epsilon (ε) label. Colour: orange/amber.
+  const sw=s*.16;
+  const hx=cx, hy=cy+s*.02;
+
+  // Fc stem — taller than IgG, two domain notches
+  g.appendChild(e('line',{x1:hx,y1:hy,x2:hx,y2:hy+s*.58,
+    stroke:'#F97316','stroke-width':sw,'stroke-linecap':'round'}));
+  // CH3/CH4 domain boundary notches
+  [s*.22,s*.42].forEach(off=>{
+    g.appendChild(e('line',{x1:hx-s*.09,y1:hy+off,x2:hx+s*.09,y2:hy+off,
+      stroke:'#EA580C','stroke-width':s*.045,'stroke-linecap':'round',opacity:'.7'}));
+  });
+
+  // Left Fab
+  const lEx=hx-s*.24, lEy=hy-s*.16, lTx=hx-s*.4, lTy=hy-s*.42;
+  g.appendChild(e('line',{x1:hx,y1:hy,x2:lEx,y2:lEy,stroke:'#F97316','stroke-width':sw,'stroke-linecap':'round'}));
+  g.appendChild(e('line',{x1:lEx,y1:lEy,x2:lTx,y2:lTy,stroke:'#F97316','stroke-width':sw,'stroke-linecap':'round'}));
+  const lCx=lTx-s*.07,lCy=lTy-s*.11;
+  g.appendChild(e('line',{x1:lTx,y1:lTy,x2:lCx,y2:lCy,stroke:'#C2410C','stroke-width':sw,'stroke-linecap':'round'}));
+  g.appendChild(e('circle',{cx:lCx,cy:lCy,r:s*.07,fill:'#9A3412',stroke:'#7C2D12','stroke-width':'1'}));
+
+  // Right Fab
+  const rEx=hx+s*.24,rEy=hy-s*.16,rTx=hx+s*.4,rTy=hy-s*.42;
+  g.appendChild(e('line',{x1:hx,y1:hy,x2:rEx,y2:rEy,stroke:'#F97316','stroke-width':sw,'stroke-linecap':'round'}));
+  g.appendChild(e('line',{x1:rEx,y1:rEy,x2:rTx,y2:rTy,stroke:'#F97316','stroke-width':sw,'stroke-linecap':'round'}));
+  const rCx=rTx+s*.07,rCy=rTy-s*.11;
+  g.appendChild(e('line',{x1:rTx,y1:rTy,x2:rCx,y2:rCy,stroke:'#C2410C','stroke-width':sw,'stroke-linecap':'round'}));
+  g.appendChild(e('circle',{cx:rCx,cy:rCy,r:s*.07,fill:'#9A3412',stroke:'#7C2D12','stroke-width':'1'}));
+
+  // Hinge
+  g.appendChild(e('circle',{cx:hx,cy:hy,r:s*.09,fill:'#EA580C',stroke:'#C2410C','stroke-width':'1'}));
+  // ε label
+  const el=e('text',{x:hx+s*.22,y:hy+s*.32,fill:'#F97316','text-anchor':'middle','font-size':s*.16,'font-weight':'700','font-family':'sans-serif',opacity:'.8'});
+  el.textContent='ε'; g.appendChild(el);
+}
+
+function drawEosinophil(g,cx,cy,s){
+  // Eosinophil: bilobed nucleus, large bright-pink eosinophilic granules (MBP, ECP).
+  const r=s*.36;
+  g.appendChild(e('circle',{cx,cy,r,fill:'#FFF1F2',stroke:'#F43F5E','stroke-width':'1.6'}));
+  // Bilobed nucleus — two overlapping dark lobes
+  g.appendChild(e('circle',{cx:cx-s*.1,cy,r:s*.13,fill:'#BE123C',opacity:'.75'}));
+  g.appendChild(e('circle',{cx:cx+s*.1,cy,r:s*.13,fill:'#BE123C',opacity:'.75'}));
+  // Nuclear bridge
+  g.appendChild(e('rect',{x:cx-s*.04,y:cy-s*.06,width:s*.08,height:s*.12,rx:s*.04,fill:'#BE123C',opacity:'.55'}));
+  // Large eosinophilic granules (MBP core — dark pink, outer ring pale)
+  [[-s*.16,s*.1],[s*.14,s*.12],[s*.0,-s*.18],[-s*.18,-s*.06],[s*.18,-s*.06],[0,s*.2]].forEach(([dx,dy])=>{
+    g.appendChild(e('circle',{cx:cx+dx,cy:cy+dy,r:s*.075,fill:'#FECDD3',stroke:'#F43F5E','stroke-width':'1',opacity:'.9'}));
+    g.appendChild(e('circle',{cx:cx+dx,cy:cy+dy,r:s*.035,fill:'#FB7185',opacity:'.8'}));
+  });
+  // "E" label
+  const l=e('text',{x:cx,y:cy+s*.22,fill:'#BE123C','text-anchor':'middle','dominant-baseline':'central','font-size':s*.16,'font-weight':'700','font-family':'sans-serif'});
+  l.textContent='E'; g.appendChild(l);
+}
+
+// ─────────────────────────────────────────────
+// LEVEL 5 — CANCER ASSETS
+// ─────────────────────────────────────────────
+
+function drawTumorCell(g,cx,cy,s){
+  // Tumour cell: large, irregular, aneuploid nucleus, heterogeneous surface.
+  // Larger than normal cells (reflects genomic instability / growth).
+  // PD-L1 shown as blunted orange spines (checkpoint ligand).
+  // MHC-I downregulated — shown as sparse/missing surface markers.
+  const r=s*.42;
+  // Irregular outline — more jagged than macrophage
+  const pts=[];
+  for(let i=0;i<18;i++){
+    const a=(i/18)*Math.PI*2, rv=r*(0.78+0.22*Math.sin(i*2.7+0.5)*Math.cos(i*1.3));
+    pts.push([cx+Math.cos(a)*rv, cy+Math.sin(a)*rv]);
+  }
+  g.appendChild(e('path',{d:'M'+pts.map(p=>p.join(',')).join('L')+'Z',
+    fill:'#FEF9C3',stroke:'#CA8A04','stroke-width':'1.8','stroke-linejoin':'round'}));
+  // Large irregular nucleus — aneuploid
+  g.appendChild(e('ellipse',{cx:cx-s*.05,cy:cy+s*.04,rx:s*.26,ry:s*.22,fill:'#854D0E',stroke:'#713F12','stroke-width':'1.2',opacity:'.8'}));
+  // Nucleolus
+  g.appendChild(e('circle',{cx:cx-s*.08,cy:cy+s*.02,r:s*.08,fill:'#451A03',opacity:'.7'}));
+  // PD-L1 surface spines — blunted orange caps (checkpoint ligand)
+  for(let i=0;i<6;i++){
+    const a=(i/6)*Math.PI*2+0.3;
+    const x1=cx+Math.cos(a)*r*0.9, y1=cy+Math.sin(a)*r*0.9;
+    const x2=cx+Math.cos(a)*(r+s*.14), y2=cy+Math.sin(a)*(r+s*.14);
+    g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#F97316','stroke-width':'1.4','stroke-linecap':'round'}));
+    // Blunt cap = PD-L1 domain
+    g.appendChild(e('line',{
+      x1:x2-Math.cos(a+Math.PI/2)*s*.06, y1:y2-Math.sin(a+Math.PI/2)*s*.06,
+      x2:x2+Math.cos(a+Math.PI/2)*s*.06, y2:y2+Math.sin(a+Math.PI/2)*s*.06,
+      stroke:'#EA580C','stroke-width':'2','stroke-linecap':'round'}));
+  }
+  // PD-L1 label
+  const pl=e('text',{x:cx,y:cy+r+s*.28,fill:'#F97316','text-anchor':'middle','font-size':s*.12,'font-weight':'700','font-family':'sans-serif'});
+  pl.textContent='PD-L1↑'; g.appendChild(pl);
+}
+
+function drawTreg(g,cx,cy,s){
+  // Regulatory T cell (Treg / CD4+FoxP3+):
+  // CD4-like base (blue-indigo) but with a suppressive red X overlay and
+  // FOXP3 nucleus label — signals immunosuppression, not activation.
+  const r=s*.35;
+  // Body — muted blue-grey (suppressive tone)
+  g.appendChild(e('circle',{cx,cy,r,fill:'#CBD5E1',stroke:'#475569','stroke-width':'1.8'}));
+  g.appendChild(e('circle',{cx,cy,r:s*.18,fill:'#334155',opacity:'.55'}));
+  // Surface spines — grey, shortened (suppressive)
+  [[-s*.35,0],[0,-s*.35],[s*.25,s*.24],[-s*.25,s*.24]].forEach(([dx,dy])=>{
+    const a=Math.atan2(dy,dx),x1=cx+Math.cos(a)*r,y1=cy+Math.sin(a)*r;
+    const x2=cx+Math.cos(a)*(r+s*.14),y2=cy+Math.sin(a)*(r+s*.14);
+    g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#64748B','stroke-width':'1.2','stroke-linecap':'round'}));
+  });
+  // FOXP3 nucleus label
+  const fl=e('text',{x:cx,y:cy,fill:'#F1F5F9','text-anchor':'middle','dominant-baseline':'central','font-size':s*.13,'font-weight':'700','font-family':'sans-serif'});
+  fl.textContent='FP3'; g.appendChild(fl);
+  // Suppressive red X overlay
+  const xs=s*.12;
+  g.appendChild(e('line',{x1:cx+r-xs,y1:cy-r+xs,x2:cx+r+xs*0.5,y2:cy-r-xs*0.5,stroke:'#DC2626','stroke-width':'1.6','stroke-linecap':'round',opacity:'.8'}));
+  g.appendChild(e('line',{x1:cx+r+xs*0.5,y1:cy-r+xs,x2:cx+r-xs,y2:cy-r-xs*0.5,stroke:'#DC2626','stroke-width':'1.6','stroke-linecap':'round',opacity:'.8'}));
+  // IL-10 / TGF-β label
+  const il=e('text',{x:cx,y:cy+r+s*.22,fill:'#94A3B8','text-anchor':'middle','font-size':s*.12,'font-weight':'600','font-family':'sans-serif'});
+  il.textContent='IL-10·TGFβ'; g.appendChild(il);
+}
+
+function drawCARTCell(g,cx,cy,s){
+  // CAR-T cell: CD8 base + synthetic CAR receptor (large extracellular domain
+  // with scFv tumour-antigen binding region + CD3ζ signalling tail).
+  // Colour: bright cyan-green to distinguish from normal T cells.
+  const r=s*.35;
+  // Cell body — vivid teal/cyan
+  g.appendChild(e('circle',{cx,cy,r,fill:'#CCFBF1',stroke:'#0D9488','stroke-width':'2'}));
+  g.appendChild(e('circle',{cx,cy,r:s*.17,fill:'#0F766E',opacity:'.65'}));
+  // CAR receptor — large synthetic construct on left side
+  // Stalk
+  const cax=cx-r, cay=cy;
+  g.appendChild(e('line',{x1:cax,y1:cay,x2:cax-s*.22,y2:cay,stroke:'#0D9488','stroke-width':s*.1,'stroke-linecap':'round'}));
+  // scFv binding domain — two linked ovals (VH + VL)
+  g.appendChild(e('ellipse',{cx:cax-s*.3,cy:cay-s*.1,rx:s*.1,ry:s*.075,fill:'#2DD4BF',stroke:'#0D9488','stroke-width':'1.2'}));
+  g.appendChild(e('ellipse',{cx:cax-s*.3,cy:cay+s*.1,rx:s*.1,ry:s*.075,fill:'#5EEAD4',stroke:'#0D9488','stroke-width':'1.2'}));
+  // Linker between VH/VL
+  g.appendChild(e('line',{x1:cax-s*.3,y1:cay-s*.025,x2:cax-s*.3,y2:cay+s*.025,stroke:'#0F766E','stroke-width':'1.5'}));
+  // CD3ζ intracellular tail — short zigzag
+  const tzx=cx-r+s*.05;
+  for(let i=0;i<3;i++){
+    const y0=cay+(i*s*.09)-s*.1, y1=cay+((i+1)*s*.09)-s*.1;
+    g.appendChild(e('line',{x1:tzx+(i%2===0?s*.05:-s*.05),y1:y0,x2:tzx+(i%2===0?-s*.05:s*.05),y2:y1,stroke:'#14B8A6','stroke-width':'1.2','stroke-linecap':'round'}));
+  }
+  // Normal TCR spines on right (retained)
+  [[s*.35,0],[s*.25,-s*.24],[s*.25,s*.24]].forEach(([dx,dy])=>{
+    const a=Math.atan2(dy,dx),x1=cx+Math.cos(a)*r,y1=cy+Math.sin(a)*r;
+    const x2=cx+Math.cos(a)*(r+s*.16),y2=cy+Math.sin(a)*(r+s*.16);
+    g.appendChild(e('line',{x1,y1,x2,y2,stroke:'#0D9488','stroke-width':'1.5','stroke-linecap':'round'}));
+  });
+  // CAR label
+  const cl=e('text',{x:cx,y:cy+r+s*.22,fill:'#0D9488','text-anchor':'middle','font-size':s*.13,'font-weight':'700','font-family':'sans-serif'});
+  cl.textContent='CAR-T'; g.appendChild(cl);
+  // "8" label
+  const l=e('text',{x:cx+s*.08,y:cy,fill:'#134E4A','text-anchor':'middle','dominant-baseline':'central','font-size':s*.2,'font-weight':'700','font-family':'sans-serif'});
+  l.textContent='8'; g.appendChild(l);
+}
+
 const CELL_DEFS={
   // Level 1 — Influenza
   macrophage:  {label:'Macrophage',    draw:drawMacrophage},
@@ -463,4 +677,12 @@ const CELL_DEFS={
   coronavirus: {label:'SARS-CoV-2',   draw:drawCoronavirus},
   ace2:        {label:'ACE2 receptor', draw:drawACE2},
   exhaustedT:  {label:'Exhausted T',   draw:drawExhaustedT},
+  // Level 4 — Allergy
+  mastcell:    {label:'Mast cell',     draw:drawMastCell},
+  ige:         {label:'IgE antibody',  draw:drawIgE},
+  eosinophil:  {label:'Eosinophil',    draw:drawEosinophil},
+  // Level 5 — Cancer
+  tumorcell:   {label:'Tumour cell',   draw:drawTumorCell},
+  treg:        {label:'Treg',          draw:drawTreg},
+  cartcell:    {label:'CAR-T cell',    draw:drawCARTCell},
 };

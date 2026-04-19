@@ -27,6 +27,8 @@ let currentLevel='flu';
 function getStages(){
   if(currentLevel==='bacterial') return STAGES_BACTERIAL;
   if(currentLevel==='covid')     return STAGES_COVID;
+  if(currentLevel==='allergy')   return STAGES_ALLERGY;
+  if(currentLevel==='cancer')    return STAGES_CANCER;
   return STAGES;
 }
 
@@ -35,9 +37,9 @@ let stageIdx=0,placed={},dzMet={},dragging=null;
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function goHome(){showScreen('title-screen');}
 function startLevel(id){
-  if(id!=='flu'&&id!=='bacterial'&&id!=='covid')return;
+  if(id!=='flu'&&id!=='bacterial'&&id!=='covid'&&id!=='allergy'&&id!=='cancer')return;
   currentLevel=id;
-  const lvlName={flu:'Level 1 — Influenza',bacterial:'Level 2 — Bacterial',covid:'Level 3 — COVID-19'}[id];
+  const lvlName={flu:'Level 1 — Influenza',bacterial:'Level 2 — Bacterial',covid:'Level 3 — COVID-19',allergy:'Level 4 — Allergy',cancer:'Level 5 — Cancer'}[id];
   document.getElementById('gb-name').textContent=lvlName;
   resetGame();showScreen('game-screen');
 }
@@ -47,18 +49,17 @@ function setMode(m,btn){
   const gm=document.getElementById('game-main');
   const cw=document.getElementById('canvas-wrap');
   if(m==='canvas'){
-    // Check if story is complete
     const prog=loadP();
-    const storyDone=prog.flu?.levelComplete===true;
+    const storyDone=prog[currentLevel]?.levelComplete===true;
     if(!storyDone){
-      // revert tab to story
       document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
       document.getElementById('tab-story')?.classList.add('active');
       showFb('Complete Story Mode first to unlock Canvas Mode','#D97706');
       return;
     }
     gm.style.display='none'; cw.classList.add('active');
-    if(!cvInitDone) cvInit();
+    cvSetLevel(currentLevel);
+    if(!cvInitDone) cvInit(); else{buildCvTray();cvReset();}
   } else {
     gm.style.display=''; cw.classList.remove('active');
   }
@@ -228,6 +229,26 @@ const LEVEL_COMPLETE={
       'Anti-RBD nAb + memory B/T cells → durable protection (vaccine correlate)',
     ],
   },
+  allergy:{
+    title:'Level 4 Complete',
+    sub:'You\'ve mapped the type I hypersensitivity response — from IgE sensitization to late-phase eosinophilic inflammation.',
+    concepts:[
+      'DC → Th2 (IL-4/IL-13) → B cell IgE class switch → FcεRI arming of mast cells',
+      'Re-exposure: allergen crosslinks IgE → FcεRI aggregation → PLCγ/Ca²⁺/PKC → degranulation',
+      'Acute phase: histamine · PGD₂ · LTC₄ → vasodilation, bronchoconstriction (minutes)',
+      'Late phase: IL-5 + eotaxin → eosinophil MBP/ECP → epithelial damage → airway remodelling',
+    ],
+  },
+  cancer:{
+    title:'Level 5 Complete — All Levels Done!',
+    sub:'You\'ve mapped cancer immunology — from tumour immune escape to CAR-T therapeutic elimination. You\'ve now completed the full Immunocascade curriculum.',
+    concepts:[
+      'Immune editing: elimination → equilibrium → escape via MHC-I loss + antigen editing',
+      'PD-L1↑ on tumour → PD-1:TIL exhaustion → checkpoint blockade (anti-PD-1) reverses this',
+      'Immunosuppressive TME: Tregs (IL-10/TGF-β) + MDSCs (arginase-1) + IDO + VEGF → cold tumour',
+      'CAR-T: scFv + CD3ζ + co-stim → MHC-independent killing; CRS/ICANS managed with tocilizumab',
+    ],
+  },
 };
 
 function showComplete(){
@@ -246,11 +267,11 @@ function showComplete(){
     if(tab) tab.textContent='Canvas';
   }
   // Unlock next level card
-  const unlocks={flu:'lv2',bacterial:'lv3'};
+  const unlocks={flu:'lv2',bacterial:'lv3',covid:'lv4',allergy:'lv5'};
   const nextId=unlocks[currentLevel];
   if(nextId){
     const card=document.getElementById(nextId+'-card');
-    if(card){card.classList.remove('locked');card.onclick=()=>startLevel(nextId==='lv2'?'bacterial':'covid');}
+    if(card){card.classList.remove('locked');card.onclick=()=>startLevel({lv2:'bacterial',lv3:'covid',lv4:'allergy',lv5:'cancer'}[nextId]);}
     const badge=document.getElementById(nextId+'-badge');
     if(badge){badge.textContent='Available';badge.className='lc-badge badge-open';}
   }
@@ -300,6 +321,8 @@ function hideFb(){document.getElementById('feedback-bar').classList.remove('show
   restoreBar('flu',       'prog-flu',        STAGES);
   restoreBar('bacterial', 'prog-bacterial',   STAGES_BACTERIAL);
   restoreBar('covid',     'prog-covid',       STAGES_COVID);
+  restoreBar('allergy',   'prog-allergy',     STAGES_ALLERGY);
+  restoreBar('cancer',    'prog-cancer',      STAGES_CANCER);
 
   // Restore canvas tab unlock
   if(prog.flu?.levelComplete){
@@ -314,6 +337,8 @@ function hideFb(){document.getElementById('feedback-bar').classList.remove('show
   };
   if(prog.flu?.levelComplete)       unlockCard('lv2-card','lv2-badge','bacterial');
   if(prog.bacterial?.levelComplete) unlockCard('lv3-card','lv3-badge','covid');
+  if(prog.covid?.levelComplete)     unlockCard('lv4-card','lv4-badge','allergy');
+  if(prog.allergy?.levelComplete)   unlockCard('lv5-card','lv5-badge','cancer');
 })();
 
 /* ── TOUCH SUPPORT ── */

@@ -932,3 +932,524 @@ const STAGES_BACTERIAL=[
     resultMsg:'The acute neutrophilic response cleared the bulk of bacteria. Th17 cells provide ongoing mucosal and skin defence. Opsonizing IgG and memory T cells ensure rapid protection on re-exposure — the basis of vaccine-induced immunity against encapsulated bacteria.',
   },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEVEL 4 — ALLERGY / TYPE I HYPERSENSITIVITY
+//
+// Key concepts distinct from all prior levels:
+//   - Two-phase response: sensitization (first exposure) vs elicitation (re-exposure)
+//   - IgE class switch driven by IL-4/IL-13 from Th2 cells
+//   - FcεRI on mast cells / basophils binds IgE Fc; allergen crosslinks → degranulation
+//   - Acute phase: histamine, tryptase, PGD2, LTC4 → vasodilation, bronchoconstriction
+//   - Late phase: eosinophil recruitment via IL-5, eotaxin → MBP/ECP tissue damage
+//   - Background: mucosal epithelium / airway — pollen allergen model
+// ─────────────────────────────────────────────────────────────────────────────
+
+function baseAirway(root){
+  // Airway mucosal epithelium — cyan-teal tones
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#0c1a2e'}));
+  // Airway lumen top
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:48,fill:'#0e2a3a',opacity:'.9'}));
+  txt(root,'AIRWAY LUMEN',14,15,'7.5','#0e7490');
+  // Mucus layer
+  root.appendChild(e('rect',{x:0,y:46,width:680,height:8,fill:'#155e75',opacity:'.6'}));
+  txt(root,'MUCUS LAYER',14,44,'6.5','rgba(21,94,117,.8)');
+  // Epithelial cells — columnar, ciliated
+  root.appendChild(e('rect',{x:0,y:52,width:680,height:48,fill:'#164e63',opacity:'.7'}));
+  [40,100,160,220,280,340,400,460,520,580,640].forEach(x=>{
+    // Cell body
+    root.appendChild(e('rect',{x:x-22,y:54,width:44,height:44,rx:4,fill:'#155e75',stroke:'#0e7490','stroke-width':'0.8',opacity:'.8'}));
+    // Cilia — short lines upward
+    for(let c=0;c<5;c++){
+      root.appendChild(e('line',{x1:x-16+c*8,y1:54,x2:x-14+c*8,y2:46,stroke:'#22d3ee','stroke-width':'0.7',opacity:'.6'}));
+    }
+  });
+  txt(root,'CILIATED EPITHELIUM',14,92,'6.5','rgba(14,116,144,.65)');
+  // Submucosa / lamina propria
+  root.appendChild(e('rect',{x:0,y:100,width:680,height:200,fill:'#0f2240',opacity:'.8'}));
+  txt(root,'SUBMUCOSA',14,116,'6.5','rgba(30,58,138,.55)');
+  // Blood vessel
+  root.appendChild(e('rect',{x:604,y:100,width:76,height:200,fill:'#4a1515',opacity:'.8'}));
+  root.appendChild(e('line',{x1:604,y1:100,x2:604,y2:300,stroke:'#6b2020','stroke-width':'2'}));
+  txt(root,'BLOOD',634,155,'7','#6b2020','middle');
+}
+
+function buildAllStage0(root){
+  // Sensitization — first allergen exposure, no symptoms
+  baseAirway(root);
+  txt(root,'SENSITIZATION — First Allergen Exposure',340,18,'8','rgba(251,191,36,.55)','middle');
+  txt(root,'no symptoms yet · Th2 polarization · IgE class switch',340,30,'6.5','rgba(251,191,36,.3)','middle');
+
+  // Pollen grains in lumen
+  [[110,25],[220,28],[350,22],[490,30],[580,24]].forEach(([cx,cy])=>{
+    const pg=e('g');
+    pg.appendChild(e('circle',{cx,cy,r:8,fill:'#FDE68A',stroke:'#D97706','stroke-width':'1'}));
+    for(let i=0;i<6;i++){
+      const a=(i/6)*Math.PI*2;
+      pg.appendChild(e('circle',{cx:cx+Math.cos(a)*9,cy:cy+Math.sin(a)*9,r:2,fill:'#F59E0B'}));
+    }
+    root.appendChild(pg);
+  });
+  txt(root,'allergen (pollen)',340,38,'7','rgba(217,119,6,.5)','middle');
+
+  // Dendritic cell sampling allergen through epithelium
+  const dcG=e('g'); dcG.style.animation='floatY 4s ease-in-out infinite'; dcG.style.transformOrigin='180px 130px';
+  drawDendritic(dcG,180,130,26);
+  txt(dcG,'DC sampling',180,165,'7.5','#FDE68A','middle');
+  root.appendChild(dcG);
+
+  // Th2 CD4 cell in submucosa
+  const th2=e('g'); th2.style.animation='floatY 3s ease-in-out infinite 0.8s'; th2.style.transformOrigin='320px 185px';
+  drawCD4(th2,320,185,24);
+  txt(th2,'CD4+ Th2',320,218,'7.5','#A5B4FC','middle');
+  txt(th2,'IL-4 · IL-13 · IL-5',320,228,'7','rgba(165,180,252,.55)','middle');
+  root.appendChild(th2);
+
+  // DC → Th2 arrow
+  const da=e('path',{d:'M200 142 Q258 160 296 178',fill:'none',stroke:'rgba(217,119,6,.5)','stroke-width':'1.1','stroke-dasharray':'4 3','marker-end':'url(#arr)',opacity:'.65'});
+  da.style.animation='dashFlow 2s linear infinite'; root.appendChild(da);
+
+  // B cell → IgE plasma cell (IL-4/IL-13 class switch)
+  const bcG=e('g'); bcG.style.animation='floatY 3.5s ease-in-out infinite 1s'; bcG.style.transformOrigin='460px 185px';
+  drawBcell(bcG,460,185,22);
+  txt(bcG,'B cell → IgE',460,216,'7.5','#BAE6FD','middle');
+  txt(bcG,'IL-4/IL-13 → ε CSR',460,226,'7','rgba(186,230,253,.45)','middle');
+  root.appendChild(bcG);
+
+  // IgE molecules arming mast cell
+  const mcG=e('g'); mcG.style.animation='floatY 5s ease-in-out infinite 0.5s'; mcG.style.transformOrigin='570px 195px';
+  drawMastCell(mcG,570,195,26);
+  txt(mcG,'mast cell',570,232,'7.5','#E9D5FF','middle');
+  txt(mcG,'FcεRI armed w/ IgE',570,242,'7','rgba(233,213,255,.45)','middle');
+  root.appendChild(mcG);
+
+  // IgE arming arrow
+  const ia=e('path',{d:'M482 185 Q525 188 545 190',fill:'none',stroke:'#F97316','stroke-width':'1.1','stroke-dasharray':'4 3','marker-end':'url(#arr)',opacity:'.65'});
+  ia.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(ia);
+
+  txt(root,'→ drag DC to sample the allergen and initiate sensitization',340,268,'7','rgba(217,119,6,.35)','middle');
+}
+
+function buildAllStage1(root){
+  // Re-exposure: allergen crosslinks IgE on mast cell → degranulation trigger
+  baseAirway(root);
+  txt(root,'RE-EXPOSURE — IgE Crosslinking',340,18,'8','rgba(168,85,247,.6)','middle');
+  txt(root,'allergen bridges two FcεRI-bound IgE → aggregation → degranulation signal',340,30,'6.5','rgba(168,85,247,.3)','middle');
+
+  // Heavy allergen load in lumen
+  [[80,25],[180,22],[290,28],[400,24],[520,26],[610,22]].forEach(([cx,cy])=>{
+    const pg=e('g');
+    pg.appendChild(e('circle',{cx,cy,r:9,fill:'#FDE68A',stroke:'#D97706','stroke-width':'1.2'}));
+    for(let i=0;i<6;i++){const a=(i/6)*Math.PI*2;pg.appendChild(e('circle',{cx:cx+Math.cos(a)*10,cy:cy+Math.sin(a)*10,r:2.5,fill:'#F59E0B'}));}
+    root.appendChild(pg);
+  });
+
+  // Armed mast cell with IgE — central, large
+  const mcG=e('g'); mcG.style.animation='floatY 3s ease-in-out infinite'; mcG.style.transformOrigin='340px 185px';
+  drawMastCell(mcG,340,185,34);
+  txt(mcG,'IgE-armed mast cell',340,230,'7.5','#E9D5FF','middle');
+  root.appendChild(mcG);
+
+  // IgE molecules on surface bridged by allergen (crosslinking)
+  [[290,148],[390,148]].forEach(([cx,cy],i)=>{
+    const ig=e('g'); ig.style.animation=`floatY ${2.5+i*.5}s ease-in-out infinite ${i*.4}s`;
+    drawIgE(ig,cx,cy,18); root.appendChild(ig);
+  });
+  // Allergen bridging the two IgEs
+  root.appendChild(e('ellipse',{cx:340,cy:132,rx:18,ry:10,fill:'#FDE68A',stroke:'#D97706','stroke-width':'1.5'}));
+  root.appendChild(e('line',{x1:302,y1:138,x2:323,y2:133,stroke:'#D97706','stroke-width':'1.3','stroke-dasharray':'3 2',opacity:'.8'}));
+  root.appendChild(e('line',{x1:378,y1:138,x2:357,y2:133,stroke:'#D97706','stroke-width':'1.3','stroke-dasharray':'3 2',opacity:'.8'}));
+  txt(root,'allergen crosslinks IgE',340,118,'7.5','rgba(217,119,6,.7)','middle');
+  txt(root,'FcεRI aggregation → signal cascade',340,108,'7','rgba(217,119,6,.5)','middle');
+
+  // PKC / Ca²⁺ signalling
+  txt(root,'PLCγ → IP3 → Ca²⁺↑ → PKC → degranulation',340,258,'7','rgba(168,85,247,.45)','middle');
+
+  txt(root,'drag the IgE antibody to arm the mast cell surface',340,268,'7','rgba(217,119,6,.35)','middle');
+}
+
+function buildAllStage2(root){
+  // Acute phase: degranulation — histamine, PGD2, LTC4 release
+  baseAirway(root);
+  txt(root,'ACUTE PHASE — Mast Cell Degranulation',340,18,'8','rgba(244,63,94,.65)','middle');
+  txt(root,'histamine · PGD2 · LTC4 · tryptase · TNF-α → symptoms within minutes',340,30,'6.5','rgba(244,63,94,.3)','middle');
+
+  // Degranulating mast cell — centre stage
+  const mcG=e('g'); mcG.style.animation='pulse 1.8s ease-in-out infinite'; mcG.style.transformOrigin='340px 178px';
+  drawMastCellDegranulating(mcG,340,178,34); root.appendChild(mcG);
+  txt(root,'degranulating mast cell',340,228,'7.5','#E9D5FF','middle');
+
+  // Released mediators radiating out with labels
+  const mediators=[
+    [220,130,'histamine','#F472B6','vasodilation\n& itch'],
+    [460,130,'PGD₂','#FB923C','bronchoconstriction'],
+    [200,220,'LTC₄','#A78BFA','mucus ↑\nbronchoconstriction'],
+    [480,220,'tryptase','#6EE7B7','mast cell\nmarker'],
+    [340,268,'TNF-α','#FCD34D','late phase\nrecruitment'],
+  ];
+  mediators.forEach(([cx,cy,label,col,effect])=>{
+    const mg=e('g'); mg.style.animation='pulse 2s ease-in-out infinite'; mg.style.transformOrigin=`${cx}px ${cy}px`;
+    drawCytokine(mg,cx,cy,13); root.appendChild(mg);
+    txt(root,label,cx,cy+20,'7.5',col,'middle');
+    // Arrow from mast cell
+    const arr=e('path',{d:`M${340+Math.sign(cx-340)*38} ${178+Math.sign(cy-178)*38} L${cx} ${cy}`,
+      fill:'none',stroke:col+'88','stroke-width':'0.9','stroke-dasharray':'3 2','marker-end':'url(#arr)',opacity:'.6'});
+    arr.style.animation='dashFlow 2s linear infinite'; root.appendChild(arr);
+  });
+
+  // Symptoms
+  txt(root,'symptoms: urticaria · rhinorrhoea · wheeze · anaphylaxis (severe)',340,285,'7','rgba(244,63,94,.45)','middle');
+
+  txt(root,'drag the mast cell into the submucosa to trigger degranulation',340,295,'6.5','rgba(217,119,6,.3)','middle');
+}
+
+function buildAllStage3(root){
+  // Late phase: eosinophil infiltration, tissue damage, chronic inflammation
+  baseAirway(root);
+  txt(root,'LATE PHASE — Eosinophil Recruitment',340,18,'8','rgba(244,63,94,.55)','middle');
+  txt(root,'IL-5 + eotaxin → eosinophil influx → MBP/ECP → tissue remodelling',340,30,'6.5','rgba(244,63,94,.3)','middle');
+
+  // Th2 cells producing IL-5
+  const th2=e('g'); th2.style.animation='floatY 4s ease-in-out infinite'; th2.style.transformOrigin='130px 175px';
+  drawCD4(th2,130,175,24);
+  txt(th2,'Th2',130,208,'7.5','#A5B4FC','middle');
+  txt(th2,'IL-5 · IL-4 · IL-13',130,218,'7','rgba(165,180,252,.55)','middle');
+  root.appendChild(th2);
+
+  // IL-5 arrow to eosinophil
+  const il5=e('path',{d:'M158 175 Q220 168 250 170',fill:'none',stroke:'rgba(244,63,94,.6)','stroke-width':'1.2','stroke-dasharray':'4 3','marker-end':'url(#arr-r)',opacity:'.7'});
+  il5.style.animation='dashFlow 1.6s linear infinite'; root.appendChild(il5);
+  txt(root,'IL-5',205,162,'7','rgba(244,63,94,.55)','middle');
+
+  // Eosinophils infiltrating
+  [[280,170],[340,155],[400,168],[460,175],[520,160]].forEach(([cx,cy],i)=>{
+    const eg=e('g'); eg.style.animation=`floatY ${3+i*.4}s ease-in-out infinite ${i*.3}s`; eg.style.transformOrigin=`${cx}px ${cy}px`;
+    drawEosinophil(eg,cx,cy,24); root.appendChild(eg);
+  });
+  txt(root,'eosinophil infiltration',400,210,'7.5','rgba(244,63,94,.6)','middle');
+
+  // MBP/ECP release — tissue damage lines
+  [[300,155],[360,148],[420,160]].forEach(([cx,cy])=>{
+    for(let a=0;a<5;a++){
+      const ang=(a/5)*Math.PI*2;
+      root.appendChild(e('line',{x1:cx+Math.cos(ang)*18,y1:cy+Math.sin(ang)*16,
+        x2:cx+Math.cos(ang)*28,y2:cy+Math.sin(ang)*24,
+        stroke:'#F43F5E','stroke-width':'1','stroke-linecap':'round',opacity:'.35'}));
+    }
+  });
+  txt(root,'MBP · ECP → epithelial damage · mucus ↑',400,228,'7','rgba(244,63,94,.45)','middle');
+
+  // Chronic remodelling
+  txt(root,'chronic: subepithelial fibrosis · airway remodelling · hyperresponsiveness',340,265,'7','rgba(217,119,6,.4)','middle');
+  // Treatment note
+  txt(root,'Rx: ICS (corticosteroids) · anti-IL-5 (mepolizumab) · anti-IgE (omalizumab)',340,277,'6.5','rgba(16,185,129,.38)','middle');
+
+  txt(root,'drag the eosinophil into the tissue to complete the late-phase response',340,290,'6.5','rgba(217,119,6,.3)','middle');
+}
+
+const STAGES_ALLERGY=[
+  {
+    id:'a0',tlIndex:0,day:'Exposure 1',dayNum:'Exp.1',
+    narr:'On first allergen exposure (e.g. pollen), dendritic cells in the airway mucosa capture and process allergen peptides. They drive <strong style="color:#F59E0B">Th2 polarisation</strong> (IL-4/IL-13 environment). Th2 cytokines drive B cell class switch to <strong style="color:#F59E0B">IgE</strong>. IgE binds FcεRI on tissue mast cells and circulating basophils — the cell is now "sensitized." No symptoms occur at this stage.',
+    prompt:'→ Drag the dendritic cell to sample the allergen and initiate sensitization.',
+    buildScene:buildAllStage0,
+    trayIds:['dendritic','macrophage','cd4','bcell'],
+    dropZones:[
+      {id:'dz-a0',cx:180,cy:130,r:40,accepts:['dendritic'],correctMsg:'✓ DC captures allergen → Th2 polarization → IL-4/IL-13 → B cell IgE class switch → mast cell arming via FcεRI'},
+    ],
+    wrongMsgs:{macrophage:'✗ Macrophages don\'t drive Th2 polarization — dendritic cells are the key allergen-presenting APC',cd4:'✗ CD4+ Th2 cells respond after DC priming — the DC needs to sample first',bcell:'✗ B cells class-switch to IgE later — DC sampling and Th2 priming come first'},
+    resultEmoji:'🌿',resultTitle:'Sensitization complete',
+    resultMsg:'Mast cells are now armed with allergen-specific IgE via FcεRI. The immune system is primed but silent. On re-exposure to the same allergen, the armed mast cells will respond within seconds — the sensitization phase sets the trap.',
+  },
+  {
+    id:'a1',tlIndex:1,day:'Exposure 2',dayNum:'Exp.2',
+    narr:'Re-exposure to the allergen causes it to bridge two adjacent IgE molecules on the mast cell surface (<strong style="color:#F59E0B">IgE crosslinking</strong>). FcεRI aggregation activates PLCγ → IP₃ → Ca²⁺ influx → PKC activation. This triggers fusion of granules with the plasma membrane and release of preformed mediators within <strong style="color:#F59E0B">seconds to minutes</strong>.',
+    prompt:'→ Drag the IgE antibody to arm the mast cell surface receptors.',
+    buildScene:buildAllStage1,
+    trayIds:['ige','mastcell','antibody','bcell'],
+    dropZones:[
+      {id:'dz-a1',cx:340,cy:185,r:50,accepts:['ige'],correctMsg:'✓ IgE binds FcεRI on mast cell → allergen crosslinks two IgE → receptor aggregation → degranulation signal'},
+    ],
+    wrongMsgs:{mastcell:'✗ The mast cell is already present — IgE is what arms its surface receptors',antibody:'✗ IgG antibodies are not involved in type I hypersensitivity — IgE binds FcεRI specifically',bcell:'✗ B cells produced the IgE earlier — drag the IgE antibody itself to arm the mast cell'},
+    resultEmoji:'⚡',resultTitle:'Mast cell armed',
+    resultMsg:'IgE crosslinking by allergen aggregates FcεRI receptors and triggers the degranulation signal cascade. This is the molecular switch for the acute allergic response — the same mechanism exploited in anaphylaxis and the target of omalizumab (anti-IgE therapy).',
+  },
+  {
+    id:'a2',tlIndex:2,day:'Minutes',dayNum:'min',
+    narr:'Within minutes, mast cells release preformed granule contents: <strong style="color:#F59E0B">histamine</strong> (vasodilation, itch, bronchoconstriction), <strong style="color:#F59E0B">tryptase</strong> (mast cell marker, protease activity), and heparin. Newly synthesised lipid mediators follow: <strong style="color:#F59E0B">PGD₂</strong> (bronchoconstriction, vasodilation) and <strong style="color:#F59E0B">LTC₄/D₄/E₄</strong> (potent bronchoconstriction, mucus secretion). Severe reactions → anaphylaxis.',
+    prompt:'→ Drag the mast cell into the submucosa to trigger degranulation.',
+    buildScene:buildAllStage2,
+    trayIds:['mastcell','eosinophil','neutrophil','cytokine'],
+    dropZones:[
+      {id:'dz-a2',cx:340,cy:178,r:50,accepts:['mastcell'],correctMsg:'✓ Mast cell degranulation → histamine + PGD₂ + LTC₄ + tryptase → acute symptoms within minutes'},
+    ],
+    wrongMsgs:{eosinophil:'✗ Eosinophils arrive in the late phase (hours) — mast cell degranulation is the immediate trigger',neutrophil:'✗ Neutrophils are not major players in type I hypersensitivity — mast cells are',cytokine:'✗ Cytokines are released by the mast cell — drag the mast cell itself to initiate degranulation'},
+    resultEmoji:'💥',resultTitle:'Acute allergic response',
+    resultMsg:'Histamine, PGD₂, and LTC₄ produce the classic symptoms of allergy within minutes. Antihistamines block H1 receptors. Epinephrine reverses bronchoconstriction and vasodilation in anaphylaxis by acting on β2 and α1 adrenoceptors.',
+  },
+  {
+    id:'a3',tlIndex:3,day:'Hours',dayNum:'hrs',
+    narr:'4–8 hours after the acute phase, a <strong style="color:#F59E0B">late-phase response</strong> develops. Th2-derived IL-5 and epithelial eotaxin recruit <strong style="color:#F59E0B">eosinophils</strong> from blood. Eosinophil degranulation releases major basic protein (MBP) and eosinophil cationic protein (ECP), causing epithelial damage and mucus hypersecretion. Repeated late-phase responses lead to <strong style="color:#F59E0B">airway remodelling</strong> and asthma.',
+    prompt:'→ Drag the eosinophil into the tissue to complete the late-phase response.',
+    buildScene:buildAllStage3,
+    trayIds:['eosinophil','neutrophil','memory','cd4'],
+    dropZones:[
+      {id:'dz-a3',cx:400,cy:168,r:52,accepts:['eosinophil'],correctMsg:'✓ Eosinophil → MBP/ECP degranulation → epithelial damage + mucus ↑ → airway remodelling'},
+    ],
+    wrongMsgs:{neutrophil:'✗ Neutrophils don\'t drive the late phase — eosinophils are recruited by IL-5 and eotaxin',memory:'✗ Memory cells are not the effectors here — eosinophils cause the late-phase tissue damage',cd4:'✗ Th2 cells drive eosinophil recruitment but are already present — drag the eosinophil itself'},
+    resultEmoji:'🏆',resultTitle:'Allergic response complete',
+    resultMsg:'The two-phase allergic response is complete. Acute symptoms from mast cell mediators resolve within an hour; late-phase eosinophilic inflammation persists for hours and drives chronic asthma with repeated exposure. Anti-IL-5 (mepolizumab) and anti-IgE (omalizumab) are key biologics targeting this pathway.',
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEVEL 5 — CANCER IMMUNOLOGY / TUMOUR MICROENVIRONMENT
+//
+// Key concepts distinct from all prior levels:
+//   - Immune editing: elimination → equilibrium → escape
+//   - MHC-I downregulation / antigen loss → NK & CTL evasion
+//   - PD-L1 on tumour cells → PD-1 on CTLs → functional exhaustion
+//   - Immunosuppressive TME: Tregs (IL-10/TGF-β), MDSCs (arginase-1/NO),
+//     IDO (tryptophan depletion), VEGF (dysfunctional vasculature)
+//   - CAR-T therapy: ex vivo engineering of patient T cells with
+//     synthetic antigen receptor (scFv + CD3ζ + co-stimulatory domains)
+//   - Resolution via CAR-T + immune checkpoint blockade (anti-PD-1)
+// Background: solid tumour mass in tissue
+// ─────────────────────────────────────────────────────────────────────────────
+
+function baseTME(root){
+  // Tumour microenvironment — dense, hypoxic, immunosuppressive
+  root.appendChild(e('rect',{x:0,y:0,width:680,height:300,fill:'#1a0e00'}));
+  // Tumour mass — central irregular mass
+  root.appendChild(e('ellipse',{cx:340,cy:152,rx:220,ry:125,fill:'#2d1a00',stroke:'#854D0E','stroke-width':'2','stroke-dasharray':'6 4',opacity:'.9'}));
+  txt(root,'TUMOUR MICROENVIRONMENT',340,20,'8','rgba(202,138,4,.45)','middle');
+  // Hypoxia gradient — darker toward centre
+  root.appendChild(e('ellipse',{cx:340,cy:152,rx:120,ry:70,fill:'rgba(30,10,0,.55)',stroke:'rgba(133,77,14,.3)','stroke-width':'1','stroke-dasharray':'4 3'}));
+  txt(root,'HYPOXIC CORE',340,140,'7','rgba(133,77,14,.4)','middle');
+  txt(root,'VEGF↑  IDO↑  TGF-β↑',340,152,'6.5','rgba(133,77,14,.3)','middle');
+  // Dysfunctional vasculature (right)
+  root.appendChild(e('path',{d:'M604 0 Q610 80 600 150 Q595 220 604 300',fill:'none',stroke:'#6b2020','stroke-width':'12',opacity:'.6'}));
+  root.appendChild(e('path',{d:'M604 0 Q610 80 600 150 Q595 220 604 300',fill:'none',stroke:'#4a1515','stroke-width':'8',opacity:'.8'}));
+  txt(root,'DYSFUNCTIONAL\nVASSEL',630,140,'6','#6b2020','middle');
+  // Normal tissue border (left)
+  root.appendChild(e('rect',{x:0,y:0,width:52,height:300,fill:'rgba(30,20,10,.6)'}));
+  root.appendChild(e('line',{x1:52,y1:0,x2:52,y2:300,stroke:'rgba(133,77,14,.3)','stroke-width':'1.5','stroke-dasharray':'5 4'}));
+  txt(root,'NORMAL\nTISSUE',14,140,'6.5','rgba(133,77,14,.35)','middle');
+}
+
+function buildCanStage0(root){
+  baseTME(root);
+  txt(root,'IMMUNE EDITING — Elimination to Escape',340,18,'7.5','rgba(202,138,4,.6)','middle');
+  txt(root,'elimination → equilibrium → escape · MHC-I loss · antigen editing',340,30,'6.5','rgba(202,138,4,.3)','middle');
+
+  // Tumour cells — cluster, some with MHC-I (being eliminated) some without (escaping)
+  [[240,120],[290,105],[350,115],[410,108],[270,160],[330,155],[390,160],[450,150]].forEach(([cx,cy],i)=>{
+    const tg=e('g'); tg.setAttribute('opacity',(.55+.25*(i%2)).toFixed(2));
+    drawTumorCell(tg,cx,cy,i%3===0?20:16); root.appendChild(tg);
+  });
+
+  // Normal CTL being evaded (left side, frustrated)
+  const ctlG=e('g'); ctlG.style.animation='floatY 3s ease-in-out infinite'; ctlG.style.transformOrigin='100px 155px';
+  drawCD8(ctlG,100,155,24);
+  txt(ctlG,'CTL',100,188,'7.5','#C4B5FD','middle');
+  txt(ctlG,'MHC-I?',100,198,'7','rgba(196,181,253,.5)','middle');
+  root.appendChild(ctlG);
+
+  // CTL → tumour frustrated arrow
+  const fArr=e('path',{d:'M124 155 Q175 150 215 135',fill:'none',stroke:'rgba(196,181,253,.4)','stroke-width':'1','stroke-dasharray':'3 2','marker-end':'url(#arr-p)',opacity:'.5'});
+  fArr.style.animation='dashFlow 2s linear infinite'; root.appendChild(fArr);
+
+  // MHC-I loss label
+  root.appendChild(e('line',{x1:340,y1:88,x2:370,y2:76,stroke:'#DC2626','stroke-width':'1.5','stroke-linecap':'round',opacity:'.7'}));
+  root.appendChild(e('line',{x1:370,y1:88,x2:340,y2:76,stroke:'#DC2626','stroke-width':'1.5','stroke-linecap':'round',opacity:'.7'}));
+  txt(root,'MHC-I ↓',355,72,'7','rgba(220,38,38,.65)','middle');
+  txt(root,'antigen loss',355,82,'6.5','rgba(220,38,38,.45)','middle');
+
+  // NK cell (should catch MHC-I-low cells — but VEGF blocks extravasation)
+  const nkG=e('g'); nkG.setAttribute('opacity','.5');
+  drawNK(nkG,100,225,18);
+  txt(nkG,'NK cell\n(blocked)',100,253,'6.5','rgba(234,88,12,.5)','middle');
+  root.appendChild(nkG);
+
+  txt(root,'drag the tumour cell to the centre to establish immune escape',340,268,'7','rgba(217,119,6,.35)','middle');
+}
+
+function buildCanStage1(root){
+  baseTME(root);
+  txt(root,'CHECKPOINT EVASION — PD-1/PD-L1',340,18,'7.5','rgba(239,68,68,.6)','middle');
+  txt(root,'tumour PD-L1 silences tumour-infiltrating lymphocytes (TILs)',340,30,'6.5','rgba(239,68,68,.3)','middle');
+
+  // Tumour cells expressing PD-L1 — central
+  [[280,140],[340,125],[400,140],[320,168],[380,165]].forEach(([cx,cy],i)=>{
+    const tg=e('g'); tg.setAttribute('opacity',(.7+.15*(i%2)).toFixed(2));
+    drawTumorCell(tg,cx,cy,18); root.appendChild(tg);
+  });
+
+  // PD-L1 : PD-1 checkpoint interaction with exhausted T cells
+  [[170,130],[165,185]].forEach(([cx,cy],i)=>{
+    const eg=e('g'); eg.style.animation=`floatY ${3+i*.6}s ease-in-out infinite ${i*.5}s`; eg.style.transformOrigin=`${cx}px ${cy}px`;
+    drawExhaustedT(eg,cx,cy,22); root.appendChild(eg);
+  });
+  txt(root,'exhausted TILs',168,218,'7.5','rgba(109,40,217,.55)','middle');
+
+  // PD-L1:PD-1 synapse arrows
+  [[250,143,170,138],[252,155,172,178]].forEach(([x1,y1,x2,y2])=>{
+    const arr=e('path',{d:`M${x1} ${y1} Q${(x1+x2)/2} ${(y1+y2)/2} ${x2} ${y2}`,
+      fill:'none',stroke:'rgba(239,68,68,.65)','stroke-width':'1.2','stroke-dasharray':'4 3','marker-end':'url(#arr-r)',opacity:'.7'});
+    arr.style.animation='dashFlow 1.5s linear infinite'; root.appendChild(arr);
+  });
+  txt(root,'PD-L1 : PD-1',210,130,'7','rgba(239,68,68,.6)','middle');
+  txt(root,'→ IFN-γ↓  IL-2↓  killing↓',210,140,'6.5','rgba(239,68,68,.45)','middle');
+
+  // Anti-PD-1 checkpoint blockade hint (right)
+  root.appendChild(e('rect',{x:480,y:115,width:110,height:52,rx:8,fill:'rgba(16,185,129,.08)',stroke:'rgba(16,185,129,.35)','stroke-width':'1.2'}));
+  txt(root,'anti-PD-1',535,132,'7.5','rgba(16,185,129,.7)','middle');
+  txt(root,'pembrolizumab',535,143,'7','rgba(16,185,129,.55)','middle');
+  txt(root,'nivolumab',535,154,'7','rgba(16,185,129,.45)','middle');
+  txt(root,'→ restores TIL function',535,165,'6.5','rgba(16,185,129,.4)','middle');
+
+  txt(root,'drag the exhausted T cell into the tumour to show checkpoint silencing',340,268,'7','rgba(217,119,6,.35)','middle');
+}
+
+function buildCanStage2(root){
+  baseTME(root);
+  txt(root,'IMMUNOSUPPRESSIVE TME',340,18,'7.5','rgba(148,163,184,.6)','middle');
+  txt(root,'Tregs · MDSCs · IDO · TGF-β · VEGF — a coordinated suppressive network',340,30,'6.5','rgba(148,163,184,.3)','middle');
+
+  // Tumour cells — background
+  [[280,138],[345,122],[405,138],[325,165],[385,162]].forEach(([cx,cy])=>{
+    const tg=e('g'); tg.setAttribute('opacity','.45'); drawTumorCell(tg,cx,cy,15); root.appendChild(tg);
+  });
+
+  // Tregs infiltrating
+  [[155,128],[155,185]].forEach(([cx,cy],i)=>{
+    const tg=e('g'); tg.style.animation=`floatY ${3.5+i*.5}s ease-in-out infinite ${i*.6}s`; tg.style.transformOrigin=`${cx}px ${cy}px`;
+    drawTreg(tg,cx,cy,24); root.appendChild(tg);
+  });
+  txt(root,'Tregs',155,218,'7.5','rgba(148,163,184,.6)','middle');
+  txt(root,'IL-10 · TGF-β',155,228,'7','rgba(148,163,184,.45)','middle');
+
+  // MDSC (represented as macrophage-like, grey)
+  const mdscG=e('g'); mdscG.setAttribute('opacity','.6');
+  drawMacrophage(mdscG,490,155,22);
+  txt(root,'MDSC',490,188,'7.5','rgba(148,163,184,.55)','middle');
+  txt(root,'arginase-1 · NO · ROS',490,198,'7','rgba(148,163,184,.4)','middle');
+  root.appendChild(mdscG);
+
+  // Suppressive signals radiating from TME core
+  const signals=[
+    [340,152,'TGF-β','rgba(148,163,184,.5)'],
+    [260,190,'IDO','rgba(148,163,184,.45)'],
+    [420,188,'VEGF','rgba(148,163,184,.45)'],
+    [260,110,'IL-10','rgba(148,163,184,.45)'],
+    [420,110,'arginase-1','rgba(148,163,184,.4)'],
+  ];
+  signals.forEach(([cx,cy,label,col])=>{
+    txt(root,label,cx,cy,'7',col,'middle');
+  });
+
+  // Exhausted CTL in corner, fading
+  const exG=e('g'); exG.setAttribute('opacity','.4');
+  drawExhaustedT(exG,100,155,20); root.appendChild(exG);
+  txt(root,'TIL (suppressed)',100,188,'6.5','rgba(109,40,217,.4)','middle');
+
+  txt(root,'drag the Treg into the tumour to complete the immunosuppressive network',340,268,'7','rgba(217,119,6,.35)','middle');
+}
+
+function buildCanStage3(root){
+  baseTME(root);
+  txt(root,'CAR-T THERAPY — Engineering the Kill',340,18,'7.5','rgba(13,148,136,.65)','middle');
+  txt(root,'ex vivo T cell engineering · tumour antigen targeting · checkpoint blockade combo',340,30,'6.5','rgba(13,148,136,.3)','middle');
+
+  // Dying/cleared tumour cells
+  [[280,138],[345,122],[405,138]].forEach(([cx,cy])=>{
+    const tg=e('g'); tg.setAttribute('opacity','.2'); drawTumorCell(tg,cx,cy,15); root.appendChild(tg);
+    // Apoptosis burst
+    for(let a=0;a<5;a++){
+      const ang=(a/5)*Math.PI*2;
+      root.appendChild(e('line',{x1:cx+Math.cos(ang)*16,y1:cy+Math.sin(ang)*14,x2:cx+Math.cos(ang)*24,y2:cy+Math.sin(ang)*20,stroke:'#EF4444','stroke-width':'0.8',opacity:'.3','stroke-linecap':'round'}));
+    }
+  });
+
+  // CAR-T cells attacking
+  [[170,128],[175,185],[240,155]].forEach(([cx,cy],i)=>{
+    const cg=e('g'); cg.style.animation=`floatY ${2.5+i*.5}s ease-in-out infinite ${i*.4}s`; cg.style.transformOrigin=`${cx}px ${cy}px`;
+    drawCARTCell(cg,cx,cy,26); root.appendChild(cg);
+  });
+  txt(root,'CAR-T cells',195,222,'7.5','#2DD4BF','middle');
+  txt(root,'CD19 / HER2 / BCMA target',195,232,'7','rgba(45,212,191,.5)','middle');
+
+  // Kill arrows from CAR-T to tumour
+  [[240,148,268,135],[242,165,278,148]].forEach(([x1,y1,x2,y2])=>{
+    const arr=e('path',{d:`M${x1} ${y1} L${x2} ${y2}`,fill:'none',stroke:'rgba(13,148,136,.7)','stroke-width':'1.4','stroke-dasharray':'4 2','marker-end':'url(#arr-g)',opacity:'.75'});
+    arr.style.animation='dashFlow 1.2s linear infinite'; root.appendChild(arr);
+  });
+
+  // Anti-PD-1 combo (right panel)
+  root.appendChild(e('rect',{x:460,y:108,width:128,height:80,rx:8,fill:'rgba(16,185,129,.07)',stroke:'rgba(16,185,129,.3)','stroke-width':'1.2'}));
+  txt(root,'+ anti-PD-1',524,124,'7.5','rgba(16,185,129,.7)','middle');
+  txt(root,'checkpoint blockade',524,136,'7','rgba(16,185,129,.55)','middle');
+  txt(root,'pembrolizumab',524,147,'6.5','rgba(16,185,129,.45)','middle');
+  txt(root,'restores endogenous TILs',524,158,'6.5','rgba(16,185,129,.4)','middle');
+  txt(root,'synergy with CAR-T',524,170,'6.5','rgba(16,185,129,.38)','middle');
+
+  // CAR-T manufacturing pipeline note
+  txt(root,'manufacturing: apheresis → lentiviral transduction → expansion → infusion',340,258,'6.5','rgba(13,148,136,.4)','middle');
+  txt(root,'toxicity: CRS (cytokine release syndrome) · ICANS (neurotoxicity)',340,268,'6.5','rgba(239,68,68,.35)','middle');
+  txt(root,'approved: CD19 (tisagenlecleucel) · BCMA (idecabtagene vicleucel)',340,278,'6.5','rgba(217,119,6,.35)','middle');
+}
+
+const STAGES_CANCER=[
+  {
+    id:'k0',tlIndex:0,day:'Months–Years',dayNum:'m–yr',
+    narr:'Cancer immunoediting proceeds through three phases: <strong style="color:#F59E0B">elimination</strong> (immune cells destroy early tumour cells), <strong style="color:#F59E0B">equilibrium</strong> (dynamic balance), and <strong style="color:#F59E0B">escape</strong>. Tumour cells that survive selection lose MHC-I expression (CTL evasion), downregulate tumour antigens, and upregulate anti-apoptotic proteins. NK cells should catch MHC-I-low cells, but dysfunctional VEGF-driven vasculature impairs lymphocyte extravasation.',
+    prompt:'→ Drag the tumour cell into the microenvironment to establish immune escape.',
+    buildScene:buildCanStage0,
+    trayIds:['tumorcell','cd8','nkcell','macrophage'],
+    dropZones:[
+      {id:'dz-k0',cx:340,cy:140,r:55,accepts:['tumorcell'],correctMsg:'✓ Tumour escapes: MHC-I↓ blocks CTL recognition, antigen loss prevents TCR engagement, VEGF blocks NK extravasation'},
+    ],
+    wrongMsgs:{cd8:'✗ CD8+ CTLs are trying to kill tumour cells — drag the tumour cell to show what they\'re evading',nkcell:'✗ NK cells are blocked from entering by dysfunctional vasculature — drag the tumour cell',macrophage:'✗ Macrophages become pro-tumour (M2) in the TME — drag the tumour cell first'},
+    resultEmoji:'🎯',resultTitle:'Immune escape established',
+    resultMsg:'Tumour cells evade elimination by losing MHC-I and tumour antigens. This is the evolutionary pressure of cancer immunoediting — selection for the least immunogenic clones. The result is a heterogeneous tumour that has already outrun the immune system.',
+  },
+  {
+    id:'k1',tlIndex:1,day:'Active tumour',dayNum:'active',
+    narr:'Tumour cells upregulate <strong style="color:#F59E0B">PD-L1</strong> (often via IFN-γ signalling from infiltrating T cells — a feedback loop). PD-L1 engages PD-1 on tumour-infiltrating lymphocytes (TILs), triggering a programme of functional exhaustion: loss of IFN-γ, TNF-α, and cytotoxic granule secretion. Anti-PD-1 antibodies (pembrolizumab, nivolumab) block this interaction and are approved for >20 cancer types.',
+    prompt:'→ Drag the exhausted T cell into the tumour to show checkpoint silencing.',
+    buildScene:buildCanStage1,
+    trayIds:['exhaustedT','cd8','treg','tumorcell'],
+    dropZones:[
+      {id:'dz-k1',cx:170,cy:157,r:48,accepts:['exhaustedT'],correctMsg:'✓ TIL exhaustion: PD-L1:PD-1 → BATF/TOX transcription programme → IFN-γ↓, IL-2↓, killing↓'},
+    ],
+    wrongMsgs:{cd8:'✗ Functional CD8+ T cells are already trying — drag the exhausted version to show the checkpoint effect',treg:'✗ Tregs suppress via IL-10/TGF-β, not PD-1 — drag the exhausted T cell for the checkpoint stage',tumorcell:'✗ The tumour is already present — drag the exhausted T cell to show the PD-1/PD-L1 interaction'},
+    resultEmoji:'🔒',resultTitle:'Checkpoint evasion active',
+    resultMsg:'PD-L1:PD-1 engagement silences tumour-infiltrating CTLs. Checkpoint blockade with anti-PD-1 or anti-PD-L1 antibodies reverses this exhaustion — the 2018 Nobel Prize mechanism. Response rates of 20–40% in solid tumours; higher with TMB-high or MSI-H tumours.',
+  },
+  {
+    id:'k2',tlIndex:2,day:'Established TME',dayNum:'TME',
+    narr:'The established TME is a coordinated immunosuppressive network. <strong style="color:#F59E0B">Tregs</strong> (FoxP3+, recruited by CCL22) secrete IL-10 and TGF-β. <strong style="color:#F59E0B">MDSCs</strong> (myeloid-derived suppressor cells) deplete arginine via arginase-1 and generate NO/ROS. IDO converts tryptophan to kynurenine (T cell toxic). VEGF creates dysfunctional vessels that exclude T cells. Together these create a "cold" tumour resistant to immunotherapy.',
+    prompt:'→ Drag the Treg into the tumour to complete the immunosuppressive network.',
+    buildScene:buildCanStage2,
+    trayIds:['treg','exhaustedT','macrophage','dendritic'],
+    dropZones:[
+      {id:'dz-k2',cx:155,cy:155,r:50,accepts:['treg'],correctMsg:'✓ Treg infiltration → IL-10/TGF-β → MDSC co-suppression → IDO/VEGF → "cold" tumour immune desert'},
+    ],
+    wrongMsgs:{exhaustedT:'✗ TIL exhaustion is already shown — drag the Treg to add the suppressive cellular network',macrophage:'✗ MDSCs (macrophage-like) are already present — drag the Treg (FoxP3+) to complete the network',dendritic:'✗ DCs are often tolerogenic in the TME but the Treg is the key suppressive cell here'},
+    resultEmoji:'❄️',resultTitle:'Cold tumour established',
+    resultMsg:'The immunosuppressive TME creates a "cold" tumour — excluded from immune attack. Strategies to "heat" cold tumours include: anti-VEGF (bevacizumab), IDO inhibitors, anti-TGF-β, STING agonists (innate immune activation), and combining checkpoint blockade with chemotherapy to release tumour antigens.',
+  },
+  {
+    id:'k3',tlIndex:3,day:'Treatment',dayNum:'Rx',
+    narr:'CAR-T cell therapy engineers a patient\'s own T cells ex vivo to express a <strong style="color:#F59E0B">chimeric antigen receptor (CAR)</strong> — a synthetic fusion of a tumour-specific scFv (antibody fragment), transmembrane domain, and intracellular CD3ζ + CD28/4-1BB co-stimulatory domains. CAR-T cells are MHC-independent, bypassing MHC-I downregulation. Combined with <strong style="color:#F59E0B">anti-PD-1 checkpoint blockade</strong>, this is the most powerful current immunotherapy approach.',
+    prompt:'→ Drag the CAR-T cell in to eliminate the tumour.',
+    buildScene:buildCanStage3,
+    trayIds:['cartcell','cd8','antibody','memory'],
+    dropZones:[
+      {id:'dz-k3',cx:205,cy:155,r:50,accepts:['cartcell'],correctMsg:'✓ CAR-T: scFv targets tumour antigen → CD3ζ/CD28 signalling → MHC-independent killing → tumour clearance'},
+    ],
+    wrongMsgs:{cd8:'✗ Ordinary CD8+ T cells are blocked by PD-L1 and MHC-I loss — CAR-T bypasses both',antibody:'✗ Antibodies can opsonize but don\'t directly kill — CAR-T provides cellular cytotoxicity',memory:'✗ Memory T cells need MHC-I for re-activation — CAR-T bypasses this requirement via the scFv'},
+    resultEmoji:'🏆',resultTitle:'Tumour eliminated',
+    resultMsg:'CAR-T cells achieve MHC-independent tumour killing by recognising surface antigens directly via the scFv. FDA-approved CAR-T products include tisagenlecleucel (CD19, B-ALL) and idecabtagene vicleucel (BCMA, myeloma). Toxicities include cytokine release syndrome (CRS) and ICANS — managed with tocilizumab and steroids.',
+  },
+];
