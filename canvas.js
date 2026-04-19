@@ -9,43 +9,160 @@
  * State:
  *   cvPlaced   : { [nodeId]: { id, x, y, def, z } }
  *   cvLinks    : [{ from, to }]
- *   CV_VALID   : Set of "from->to" strings representing correct connections
+ *   CV_NODES_DEF / CV_VALID : set per level by cvSetLevel()
  *
- * Canvas mode is locked behind story completion (prog.flu.levelComplete).
+ * Canvas mode unlocks after completing each level's story mode, and
+ * shows the node set and valid connections for that specific level.
  * Nodes are draggable; connections are made by dragging from the ● dot.
  * Right-click a connection to delete it. Drag a node to the trash zone
- * (top-right corner) to remove it from the canvas.
+ * (top-right corner) to remove it.
  *
  * Depends on: cells.js (draw functions, NS constant)
  */
 
+/* ── Per-level canvas definitions ── */
+const CV_LEVELS={
+  flu:{
+    title:'Influenza immune cascade',
+    coreNodes:['influenza','tlr7','ifn','macrophage','dendritic','cd4','cd8','clearance'],
+    nodes:[
+      {id:'influenza', label:'Influenza\nvirion',  cat:'pathogen', draw:()=>drawInfluenza},
+      {id:'tlr7',      label:'TLR7\ndetection',    cat:'innate',   draw:()=>drawTLR},
+      {id:'nfkb',      label:'NF-κB\nsignaling',   cat:'innate',   draw:()=>drawNFkB},
+      {id:'ifn',       label:'IFN-α/β\nrelease',   cat:'cytokine', draw:()=>drawCytokine},
+      {id:'macrophage',label:'Macrophage',          cat:'innate',   draw:()=>drawMacrophage},
+      {id:'nkcell',    label:'NK cell',             cat:'innate',   draw:()=>drawNK},
+      {id:'dendritic', label:'Dendritic\ncell',     cat:'innate',   draw:()=>drawDendritic},
+      {id:'cd4',       label:'CD4+\nT cell',        cat:'adaptive', draw:()=>drawCD4},
+      {id:'cd8',       label:'CD8+\nT cell',        cat:'adaptive', draw:()=>drawCD8},
+      {id:'bcell',     label:'B cell',              cat:'adaptive', draw:()=>drawBcell},
+      {id:'antibody',  label:'IgG\nantibody',       cat:'outcome',  draw:()=>drawAntibody},
+      {id:'memory',    label:'Memory\ncell',        cat:'outcome',  draw:()=>drawMemory},
+      {id:'clearance', label:'Viral\nclearance',    cat:'outcome',  draw:()=>drawClearance},
+    ],
+    valid:new Set([
+      'influenza->tlr7','influenza->macrophage','tlr7->nfkb','tlr7->ifn',
+      'nfkb->ifn','nfkb->macrophage','ifn->nkcell','ifn->dendritic',
+      'macrophage->dendritic','nkcell->dendritic','dendritic->cd4','dendritic->cd8',
+      'cd4->bcell','cd4->cd8','bcell->antibody','antibody->clearance',
+      'cd8->clearance','cd4->memory','cd8->memory','bcell->memory',
+    ]),
+    promptContext:'influenza immune response cascade (TLR7/innate → DC migration → T cell priming → B cell/GC → CTL clearance + memory)',
+  },
+  bacterial:{
+    title:'Bacterial infection response',
+    coreNodes:['bacteria','macrophage','neutrophil','complement','dendritic','cd4','antibody','clearance'],
+    nodes:[
+      {id:'bacteria',   label:'S. aureus',          cat:'pathogen', draw:()=>drawBacteria},
+      {id:'tlr2',       label:'TLR2/NOD2\ndetection',cat:'innate',  draw:()=>drawTLR},
+      {id:'macrophage', label:'Macrophage',          cat:'innate',  draw:()=>drawMacrophage},
+      {id:'neutrophil', label:'Neutrophil',          cat:'innate',  draw:()=>drawNeutrophil},
+      {id:'complement', label:'C3b\nopsonin',        cat:'innate',  draw:()=>drawComplement},
+      {id:'il8',        label:'IL-8\ngradient',      cat:'cytokine',draw:()=>drawCytokine},
+      {id:'dendritic',  label:'Dendritic\ncell',     cat:'adaptive',draw:()=>drawDendritic},
+      {id:'cd4',        label:'CD4+\nTh17',          cat:'adaptive',draw:()=>drawCD4},
+      {id:'antibody',   label:'IgG\nopsonin',        cat:'outcome', draw:()=>drawAntibody},
+      {id:'memory',     label:'Memory\ncell',        cat:'outcome', draw:()=>drawMemory},
+      {id:'clearance',  label:'Bacterial\nclearance',cat:'outcome', draw:()=>drawClearance},
+    ],
+    valid:new Set([
+      'bacteria->tlr2','bacteria->complement','bacteria->macrophage',
+      'tlr2->macrophage','tlr2->il8','macrophage->il8','macrophage->neutrophil',
+      'il8->neutrophil','complement->neutrophil','complement->macrophage',
+      'neutrophil->clearance','macrophage->clearance','macrophage->dendritic',
+      'dendritic->cd4','cd4->antibody','antibody->clearance',
+      'cd4->memory','antibody->memory',
+    ]),
+    promptContext:'Gram-positive bacterial infection (TLR2/NOD2 → IL-8 → neutrophil recruitment → C3b opsonization → phagocytosis → Th17 → IgG memory)',
+  },
+  covid:{
+    title:'SARS-CoV-2 immune response',
+    coreNodes:['coronavirus','ace2','macrophage','cytokine','exhaustedT','antibody','memory'],
+    nodes:[
+      {id:'coronavirus', label:'SARS-CoV-2',        cat:'pathogen', draw:()=>drawCoronavirus},
+      {id:'ace2',        label:'ACE2\nentry',        cat:'pathogen', draw:()=>drawACE2},
+      {id:'ifn_block',   label:'IFN-I\nsuppressed',  cat:'innate',   draw:()=>drawCytokine},
+      {id:'macrophage',  label:'Macrophage\n(hyper)',cat:'innate',   draw:()=>drawMacrophage},
+      {id:'cytokine',    label:'Cytokine\nstorm',    cat:'cytokine', draw:()=>drawCytokine},
+      {id:'pdl1',        label:'PD-L1\nupregulation',cat:'innate',  draw:()=>drawTumorCell},
+      {id:'exhaustedT',  label:'Exhausted\nTIL',     cat:'adaptive', draw:()=>drawExhaustedT},
+      {id:'cd8',         label:'CD8+\nCTL',          cat:'adaptive', draw:()=>drawCD8},
+      {id:'antibody',    label:'anti-RBD\nnAb',      cat:'outcome',  draw:()=>drawAntibody},
+      {id:'memory',      label:'Memory\ncell',       cat:'outcome',  draw:()=>drawMemory},
+      {id:'clearance',   label:'Viral\nclearance',   cat:'outcome',  draw:()=>drawClearance},
+    ],
+    valid:new Set([
+      'coronavirus->ace2','ace2->ifn_block','ifn_block->macrophage',
+      'macrophage->cytokine','cytokine->pdl1','pdl1->exhaustedT',
+      'coronavirus->macrophage','macrophage->cd8','cd8->clearance',
+      'cd8->memory','antibody->clearance','antibody->memory',
+      'exhaustedT->clearance',
+    ]),
+    promptContext:'SARS-CoV-2 (ACE2 entry → IFN-I suppression → cytokine storm → PD-L1/PD-1 T cell exhaustion → nAb resolution)',
+  },
+  allergy:{
+    title:'Type I hypersensitivity',
+    coreNodes:['allergen','dendritic','cd4th2','ige','mastcell','histamine','eosinophil'],
+    nodes:[
+      {id:'allergen',   label:'Allergen\n(pollen)',  cat:'pathogen', draw:()=>drawCytokine},
+      {id:'dendritic',  label:'Dendritic\ncell',     cat:'innate',   draw:()=>drawDendritic},
+      {id:'cd4th2',     label:'CD4+\nTh2',           cat:'adaptive', draw:()=>drawCD4},
+      {id:'bcell',      label:'B cell\n→ IgE',       cat:'adaptive', draw:()=>drawBcell},
+      {id:'ige',        label:'IgE\nantibody',       cat:'adaptive', draw:()=>drawIgE},
+      {id:'mastcell',   label:'Mast cell\n(armed)',  cat:'innate',   draw:()=>drawMastCell},
+      {id:'histamine',  label:'Histamine\nPGD₂ LTC₄',cat:'cytokine',draw:()=>drawCytokine},
+      {id:'eosinophil', label:'Eosinophil',          cat:'innate',   draw:()=>drawEosinophil},
+      {id:'il5',        label:'IL-5\neotaxin',       cat:'cytokine', draw:()=>drawCytokine},
+    ],
+    valid:new Set([
+      'allergen->dendritic','dendritic->cd4th2','cd4th2->bcell',
+      'bcell->ige','ige->mastcell','allergen->mastcell',
+      'mastcell->histamine','cd4th2->il5','il5->eosinophil',
+      'histamine->eosinophil',
+    ]),
+    promptContext:'type I hypersensitivity/allergy (DC → Th2 → IgE class switch → FcεRI mast cell arming → allergen crosslinking → degranulation → late-phase eosinophil)',
+  },
+  cancer:{
+    title:'Cancer immunology / TME',
+    coreNodes:['tumorcell','pdl1','exhaustedT','treg','mdsc','cartcell','clearance'],
+    nodes:[
+      {id:'tumorcell',  label:'Tumour\ncell',        cat:'pathogen', draw:()=>drawTumorCell},
+      {id:'mhc_loss',   label:'MHC-I\nloss',         cat:'pathogen', draw:()=>drawTumorCell},
+      {id:'pdl1',       label:'PD-L1\nexpression',   cat:'pathogen', draw:()=>drawTumorCell},
+      {id:'cd8',        label:'CD8+\nTIL',           cat:'adaptive', draw:()=>drawCD8},
+      {id:'exhaustedT', label:'Exhausted\nT cell',   cat:'adaptive', draw:()=>drawExhaustedT},
+      {id:'treg',       label:'Treg\nFoxP3+',        cat:'innate',   draw:()=>drawTreg},
+      {id:'mdsc',       label:'MDSC\narginase-1',    cat:'innate',   draw:()=>drawMacrophage},
+      {id:'vegf',       label:'VEGF\nIDO TGF-β',    cat:'cytokine', draw:()=>drawCytokine},
+      {id:'antipd1',    label:'anti-PD-1\nblockade', cat:'outcome',  draw:()=>drawAntibody},
+      {id:'cartcell',   label:'CAR-T\ncell',         cat:'outcome',  draw:()=>drawCARTCell},
+      {id:'clearance',  label:'Tumour\nclearance',   cat:'outcome',  draw:()=>drawClearance},
+    ],
+    valid:new Set([
+      'tumorcell->mhc_loss','tumorcell->pdl1','tumorcell->vegf',
+      'pdl1->exhaustedT','mhc_loss->cd8','cd8->exhaustedT',
+      'treg->exhaustedT','mdsc->exhaustedT','vegf->treg','vegf->mdsc',
+      'antipd1->exhaustedT','antipd1->cd8','antipd1->clearance',
+      'cartcell->clearance','cartcell->tumorcell','cd8->clearance',
+    ]),
+    promptContext:'cancer immunology/TME (MHC-I loss → CTL evasion, PD-L1 → TIL exhaustion, Treg/MDSC/IDO/VEGF immunosuppression, CAR-T + anti-PD-1 → clearance)',
+  },
+};
 
-/* ═══════════════════════════════════════════════
-   CANVAS MODE
-═══════════════════════════════════════════════ */
-const CV_NODES_DEF=[
-  {id:'influenza', label:'Influenza\nvirion',  cat:'pathogen', draw:drawInfluenza},
-  {id:'tlr7',      label:'TLR7\ndetection',    cat:'innate',   draw:drawTLR},
-  {id:'nfkb',      label:'NF-κB\nsignaling',   cat:'innate',   draw:drawNFkB},
-  {id:'ifn',       label:'IFN-α/β\nrelease',   cat:'cytokine', draw:drawCytokine},
-  {id:'macrophage',label:'Macrophage',          cat:'innate',   draw:drawMacrophage},
-  {id:'nkcell',    label:'NK cell',             cat:'innate',   draw:drawNK},
-  {id:'dendritic', label:'Dendritic\ncell',     cat:'innate',   draw:drawDendritic},
-  {id:'cd4',       label:'CD4+\nT cell',        cat:'adaptive', draw:drawCD4},
-  {id:'cd8',       label:'CD8+\nT cell',        cat:'adaptive', draw:drawCD8},
-  {id:'bcell',     label:'B cell',              cat:'adaptive', draw:drawBcell},
-  {id:'antibody',  label:'IgG\nantibody',       cat:'outcome',  draw:drawAntibody},
-  {id:'memory',    label:'Memory\ncell',        cat:'outcome',  draw:drawMemory},
-  {id:'clearance', label:'Viral\nclearance',    cat:'outcome',  draw:drawClearance},
-];
+// Active canvas level — set by cvSetLevel(), called from game.js setMode()
+let CV_NODES_DEF=CV_LEVELS.flu.nodes.map(n=>({...n,draw:n.draw()}));
+let CV_VALID=CV_LEVELS.flu.valid;
+let CV_CONTEXT=CV_LEVELS.flu.promptContext;
+let CV_CORE=CV_LEVELS.flu.coreNodes;
 
-const CV_VALID=new Set([
-  'influenza->tlr7','influenza->macrophage','tlr7->nfkb','tlr7->ifn',
-  'nfkb->ifn','nfkb->macrophage','ifn->nkcell','ifn->dendritic',
-  'macrophage->dendritic','nkcell->dendritic','dendritic->cd4','dendritic->cd8',
-  'cd4->bcell','cd4->cd8','bcell->antibody','antibody->clearance',
-  'cd8->clearance','cd4->memory','cd8->memory','bcell->memory',
-]);
+function cvSetLevel(levelId){
+  const def=CV_LEVELS[levelId]||CV_LEVELS.flu;
+  // Resolve draw function references (stored as thunks to avoid hoisting issues)
+  CV_NODES_DEF=def.nodes.map(n=>({...n,draw:n.draw()}));
+  CV_VALID=def.valid;
+  CV_CONTEXT=def.promptContext;
+  CV_CORE=def.coreNodes;
+}
 
 const CAT_COLORS={
   pathogen:{fill:'#FEE2E2',stroke:'#EF4444',text:'#7F1D1D'},
@@ -280,10 +397,9 @@ async function cvEvaluate(){
 
   const nodeList=placedIds.join(', ');
   const linkList=cvLinks.map(l=>`${l.from} → ${l.to} (${CV_VALID.has(`${l.from}->${l.to}`)||CV_VALID.has(`${l.to}->${l.from}`)?'correct':'incorrect'})`).join('\n');
-  const coreRequired=['influenza','tlr7','ifn','macrophage','dendritic','cd4','cd8','clearance'];
-  const missing=coreRequired.filter(id=>!placedIds.includes(id));
+  const missing=CV_CORE.filter(id=>!placedIds.includes(id));
 
-  const prompt=`You are an immunology educator evaluating a student's attempt to map the influenza immune response cascade.
+  const prompt=`You are an immunology educator evaluating a student's attempt to map the ${CV_CONTEXT}.
 
 The student placed these nodes: ${nodeList}
 Their connections:
