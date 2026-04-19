@@ -178,6 +178,13 @@ let cvLinks=[];   // [{from,to}]
 let cvDraggingNode=null,cvDragOffset={x:0,y:0};
 let cvConnectFrom=null,cvTempLine=null;
 let cvNextZ=1;
+// Pan state
+let cvPanX=0,cvPanY=0,cvPanning=false,cvPanStart={x:0,y:0};
+const CV_W=1400,CV_H=1000; // logical canvas size
+
+function cvApplyPan(){
+  document.getElementById('cv-world').setAttribute('transform',`translate(${cvPanX},${cvPanY})`);
+}
 
 function cvInit(){
   cvInitDone=true;
@@ -188,6 +195,17 @@ function cvInit(){
   cvSvg.addEventListener('mouseup',cvOnUp);
   cvSvg.addEventListener('dragover',ev=>ev.preventDefault());
   cvSvg.addEventListener('drop',cvOnDrop);
+  // Pan: mousedown on background starts pan
+  cvSvg.addEventListener('mousedown',ev=>{
+    // Only pan if clicking directly on svg background or grid rect (not a node/link)
+    if(ev.target===cvSvg||ev.target.tagName==='rect'&&ev.target.getAttribute('fill')==='#1a0800'||
+       ev.target.tagName==='rect'&&ev.target.getAttribute('fill')==='url(#cv-grid)'){
+      cvPanning=true;
+      cvPanStart={x:ev.clientX-cvPanX,y:ev.clientY-cvPanY};
+      cvSvg.classList.add('panning');
+      ev.preventDefault();
+    }
+  });
 }
 
 function buildCvTray(){
@@ -218,7 +236,10 @@ function buildCvTray(){
 function cvSvgPoint(clientX,clientY){
   const svg=document.getElementById('canvas-svg');
   const r=svg.getBoundingClientRect();
-  return{x:(clientX-r.left)*(680/r.width),y:(clientY-r.top)*(520/r.height)};
+  // Account for pan offset — raw SVG point minus pan
+  const rawX=(clientX-r.left)*(CV_W/r.width);
+  const rawY=(clientY-r.top)*(CV_H/r.height);
+  return{x:rawX-cvPanX, y:rawY-cvPanY};
 }
 
 function cvOnDrop(ev){
@@ -231,7 +252,7 @@ function cvOnDrop(ev){
 function cvPlaceNode(id,x,y){
   if(cvPlaced[id])return;
   const def=CV_NODES_DEF.find(n=>n.id===id); if(!def)return;
-  x=Math.max(60,Math.min(620,x)); y=Math.max(40,Math.min(520,y));
+  x=Math.max(60,Math.min(CV_W-60,x)); y=Math.max(40,Math.min(CV_H-60,y));
   cvPlaced[id]={id,x,y,def,z:cvNextZ++};
   document.getElementById('cvchip-'+id)?.classList.add('placed');
   document.getElementById('canvas-hint').style.display='none';
@@ -312,12 +333,19 @@ function cvRenderNodes(){
 }
 
 function cvOnMove(ev){
+  // Pan handler
+  if(cvPanning&&!cvDraggingNode&&!cvConnectFrom){
+    cvPanX=ev.clientX-cvPanStart.x;
+    cvPanY=ev.clientY-cvPanStart.y;
+    cvApplyPan();
+    return;
+  }
   const pt=cvSvgPoint(ev.clientX,ev.clientY);
   if(cvDraggingNode&&cvPlaced[cvDraggingNode]){
     const p=cvPlaced[cvDraggingNode];
-    p.x=Math.max(60,Math.min(620,pt.x-cvDragOffset.x));
-    p.y=Math.max(40,Math.min(520,pt.y-cvDragOffset.y));
-    // Show trash zone and highlight if near top-right corner (SVG coords ~x>580 y<70)
+    p.x=Math.max(60,Math.min(CV_W-60,pt.x-cvDragOffset.x));
+    p.y=Math.max(40,Math.min(CV_H-60,pt.y-cvDragOffset.y));
+    // Show trash zone and highlight if near top-right corner of screen
     const trashEl=document.getElementById('cv-trash-zone');
     trashEl.classList.add('active');
     const nearTrash=(pt.x-cvDragOffset.x)>540&&(pt.y-cvDragOffset.y)<80;
@@ -330,6 +358,11 @@ function cvOnMove(ev){
 }
 
 function cvOnUp(ev){
+  // Stop panning
+  if(cvPanning){
+    cvPanning=false;
+    document.getElementById('canvas-svg').classList.remove('panning');
+  }
   // Hide trash zone
   const trashEl=document.getElementById('cv-trash-zone');
   trashEl.classList.remove('active','over');
@@ -377,6 +410,7 @@ function cvOnUp(ev){
 
 function cvReset(){
   cvPlaced={}; cvLinks=[]; cvNextZ=1;
+  cvPanX=0; cvPanY=0; cvApplyPan();
   document.getElementById('cv-drag-line').innerHTML='';
   document.getElementById('canvas-hint').style.display='';
   document.getElementById('ai-empty').style.display='';
@@ -473,3 +507,18 @@ function cvShowFb(msg,color='#FDE68A'){
   fb.textContent=msg; fb.style.borderColor=color; fb.style.color=color; fb.classList.add('show');
   if(cvFbTimer)clearTimeout(cvFbTimer); cvFbTimer=setTimeout(()=>fb.classList.remove('show'),3500);
 }
+
+// Continue pan even if mouse leaves the SVG
+document.addEventListener('mousemove',ev=>{
+  if(cvPanning&&!cvDraggingNode&&!cvConnectFrom){
+    cvPanX=ev.clientX-cvPanStart.x;
+    cvPanY=ev.clientY-cvPanStart.y;
+    cvApplyPan();
+  }
+});
+document.addEventListener('mouseup',ev=>{
+  if(cvPanning){
+    cvPanning=false;
+    document.getElementById('canvas-svg')?.classList.remove('panning');
+  }
+});
