@@ -33,7 +33,7 @@
   --font-body:'DM Sans',sans-serif;
   --font-mono:'DM Mono',monospace;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);overflow-x:hidden;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);overflow:hidden;}
 @keyframes spinSlow{to{transform:rotate(360deg)}}
 @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
@@ -147,11 +147,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 #canvas-svg-wrap{flex:1;position:relative;overflow:hidden;min-height:0;}
 #canvas-svg{width:100%;height:100%;display:block;cursor:grab;user-select:none;-webkit-user-select:none;}
 #canvas-svg.panning{cursor:grabbing;}
-#canvas-tray{width:90px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;padding:10px 7px 12px;overflow-y:auto;overflow-x:hidden;min-height:0;}
+#canvas-tray{width:90px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:10px 7px 12px;overflow-y:auto;overflow-x:hidden;min-height:0;}
 #canvas-tray-label{font-family:var(--font-mono);font-size:7px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;text-align:center;line-height:1.4;}
 #canvas-tray-row{display:flex;flex-direction:column;gap:8px;align-items:center;}
 .canvas-chip{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:7px 5px 5px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:grab;transition:border-color .15s,transform .15s;width:74px;flex-shrink:0;user-select:none;}
-.canvas-chip:hover{border-color:var(--border2);transform:translateX(-2px);}
+.canvas-chip:hover{border-color:var(--border2);transform:translateX(2px);}
 .canvas-chip.placed{opacity:.25;pointer-events:none;}
 .canvas-chip-name{font-family:var(--font-mono);font-size:7.5px;color:var(--amber3);text-align:center;line-height:1.2;}
 #canvas-bar{background:var(--bg2);border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:12px;align-items:center;flex-shrink:0;font-family:var(--font-mono);font-size:11px;color:var(--amber3);}
