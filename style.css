@@ -33,7 +33,7 @@
   --font-body:'DM Sans',sans-serif;
   --font-mono:'DM Mono',monospace;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);overflow:hidden;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);overflow-x:hidden;}
 @keyframes spinSlow{to{transform:rotate(360deg)}}
 @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
@@ -141,7 +141,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .key-concept{background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:11px;color:var(--green2);text-align:left;font-family:var(--font-mono);}
 
 /* CANVAS MODE */
-#canvas-wrap{flex:1;display:none;flex-direction:row;min-height:0;overflow:hidden;}
+#canvas-wrap{flex:1;display:none;flex-direction:row;min-height:0;overflow:hidden;height:0;}
 #canvas-wrap.active{display:flex;}
 #canvas-main{flex:1;background:#1a0800;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;}
 #canvas-svg-wrap{flex:1;position:relative;overflow:hidden;min-height:0;}
@@ -228,7 +228,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
     width:100%;
     height:74px;
     flex-direction:row;
-    border-left:none;
+    border-right:none;
     border-top:1px solid var(--border);
     padding:6px 10px;
     overflow-x:auto;
