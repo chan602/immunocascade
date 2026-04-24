@@ -94,8 +94,7 @@ function buildScene(st){
   st.dropZones.forEach(dz=>{
     const g=e('g'); g.id=dz.id;
     g.appendChild(e('circle',{cx:dz.cx,cy:dz.cy,r:dz.r,fill:'rgba(61,24,0,.45)',stroke:'#D97706','stroke-width':'2','stroke-dasharray':'8 5'}));
-    const t1=e('text',{x:dz.cx,y:dz.cy-6,'text-anchor':'middle','font-size':'10',fill:'#D97706','font-family':"'DM Mono',monospace",'font-weight':'500'});t1.textContent='Drop here';g.appendChild(t1);
-    const t2=e('text',{x:dz.cx,y:dz.cy+9,'text-anchor':'middle','font-size':'8',fill:'#92400E','font-family':"'DM Sans',sans-serif"});t2.textContent=dz.accepts.join('/')+' ?';g.appendChild(t2);
+    const t1=e('text',{x:dz.cx,y:dz.cy+4,'text-anchor':'middle','font-size':'10',fill:'#D97706','font-family':"'DM Mono',monospace",'font-weight':'500'});t1.textContent='Drop here';g.appendChild(t1);
     root.appendChild(g);
   });
 }

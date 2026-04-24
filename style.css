@@ -74,7 +74,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 #title-footer{font-family:var(--font-mono);font-size:9.5px;color:var(--text3);letter-spacing:.08em;}
 
 /* GAME */
-#game-screen{background:var(--bg);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+#game-screen{background:var(--bg);height:100vh;overflow:hidden;}
 #game-bar{background:var(--bg);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
 #back-btn{font-family:var(--font-mono);font-size:11px;color:var(--text3);background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;cursor:pointer;transition:border-color .15s,color .15s;}
 #back-btn:hover{border-color:var(--border2);color:var(--amber);}
