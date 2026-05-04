@@ -93,8 +93,15 @@ function buildScene(st){
   const pl=e('g'); pl.id='placed-layer'; root.appendChild(pl);
   st.dropZones.forEach(dz=>{
     const g=e('g'); g.id=dz.id;
-    g.appendChild(e('circle',{cx:dz.cx,cy:dz.cy,r:dz.r,fill:'rgba(61,24,0,.45)',stroke:'#D97706','stroke-width':'2','stroke-dasharray':'8 5'}));
-    const t1=e('text',{x:dz.cx,y:dz.cy+4,'text-anchor':'middle','font-size':'10',fill:'#D97706','font-family':"'DM Mono',monospace",'font-weight':'500'});t1.textContent='Drop here';g.appendChild(t1);
+    const dot=e('circle',{cx:dz.cx,cy:dz.cy,r:'9',fill:'rgba(217,119,6,.2)',stroke:'#D97706','stroke-width':'1.5','stroke-dasharray':'4 3'});
+    dot.style.animation='pulse 1.8s ease-in-out infinite';
+    g.appendChild(dot);
+    if(stageIdx===0){
+      const t1=e('text',{x:dz.cx,y:dz.cy-16,'text-anchor':'middle','font-size':'9',fill:'#D97706','font-family':"'DM Mono',monospace",'font-weight':'500'});
+      t1.textContent='Drop here';
+      t1.setAttribute('class','dz-hint-fade');
+      g.appendChild(t1);
+    }
     root.appendChild(g);
   });
 }
@@ -138,7 +145,7 @@ document.addEventListener('mousemove',ev=>{
     const hit=Math.hypot(pt.x-dz.cx,pt.y-dz.cy)<dz.r;
     const c=g.querySelector('circle');
     c.setAttribute('stroke',hit?'#F59E0B':'#D97706');
-    c.setAttribute('fill',hit?'rgba(245,158,11,.18)':'rgba(61,24,0,.45)');
+    c.setAttribute('fill',hit?'rgba(245,158,11,.45)':'rgba(217,119,6,.2)');
   });
 });
 
@@ -148,7 +155,7 @@ document.addEventListener('mouseup',ev=>{
   document.getElementById('drag-ghost').style.display='none';
   document.getElementById('chip-'+id)?.classList.remove('dragging');
   const st=getStages()[stageIdx];
-  st.dropZones.forEach(dz=>{const g=document.getElementById(dz.id);if(!g)return;const c=g.querySelector('circle');c.setAttribute('stroke','#D97706');c.setAttribute('fill','rgba(61,24,0,.45)');});
+  st.dropZones.forEach(dz=>{const g=document.getElementById(dz.id);if(!g)return;const c=g.querySelector('circle');c.setAttribute('stroke','#D97706');c.setAttribute('fill','rgba(217,119,6,.2)');});
   if(placed[id])return;
   const pt=svgPt(ev.clientX,ev.clientY);
   let hitDZ=null;

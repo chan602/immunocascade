@@ -57,50 +57,52 @@ function dashArrow(root,d,stroke,marker){
 function buildStage0(root){
   baseEpithelium(root);
 
-  // ── Virions in lumen ──
-  root.appendChild(virusGrp(130,82,22,16,12,false));
-  root.appendChild(virusGrp(275,50,15,11,18,true));
+  // ── Free virions in lumen (initial viral load — OK to float) ──
+  root.appendChild(virusGrp(310,50,15,11,18,true));
   root.appendChild(virusGrp(480,68,18,13,15,false));
 
-  // ── Virus entering epithelium (HA binding) ──
-  const vi=e('g'); vi.style.animation='floatY 2.5s ease-in-out infinite'; vi.style.transformOrigin='390px 175px';
-  vi.appendChild(e('ellipse',{cx:390,cy:175,rx:13,ry:9,fill:'#FECACA',stroke:'#DC2626','stroke-width':'1.3',opacity:'.95'}));
-  // HA binding line to membrane
-  vi.appendChild(e('line',{x1:390,y1:184,x2:390,y2:226,stroke:'#DC2626','stroke-width':'1','stroke-dasharray':'3 2',opacity:'.6'}));
-  txt(vi,'HA binds',390,170,'7','#FCA5A5','middle');
-  txt(vi,'sialic acid',390,180,'6.5','#FCA5A5','middle');
-  root.appendChild(vi);
+  // ══ LEFT PANEL: Viral entry → recognition cascade (x=60–250) ══
+  // Connected chain: virion → HA:sialic acid → TLR7 → IRF3/NF-κB → IFN-α/β
 
-  // ── TLR7 receptor ON the membrane ──
-  // Draw it sitting in the epithelial layer at ~cx=248
+  // Virion in lumen — cascade entry point
+  root.appendChild(virusGrp(100,26,13,9,14,false));
+
+  // Arrow: virion descends → HA binds sialic acid receptor
+  const haArrow=e('path',{d:'M100 37 L100 200',fill:'none',stroke:'#DC2626','stroke-width':'1','stroke-dasharray':'4 3','marker-end':'url(#arr-r)',opacity:'.55'});
+  haArrow.style.animation='dashFlow 2.2s linear infinite'; root.appendChild(haArrow);
+  txt(root,'HA →',108,110,'7','rgba(252,165,165,.7)','start');
+  txt(root,'sialic acid',108,122,'6.5','rgba(252,165,165,.55)','start');
+
+  // TLR7 receptor at membrane
   const tlrG=e('g');
-  drawTLR(tlrG,248,215,22); // sits right in the membrane band
-  txt(root,'TLR7',248,199,'7','#FB923C','middle');
-  root.appendChild(tlrG);
+  drawTLR(tlrG,100,213,18); root.appendChild(tlrG);
+  txt(root,'TLR7',100,197,'7','#FB923C','middle');
 
-  // ── NF-κB activation arrow from TLR7 ──
-  const nfArrow=e('path',{d:'M248 238 Q248 265 248 275',fill:'none',stroke:'#EA580C','stroke-width':'1.2','stroke-dasharray':'4 3','marker-end':'url(#arr)',opacity:'.75'});
+  // Arrow: TLR7 → IRF3/NF-κB (into epithelial layer)
+  const nfArrow=e('path',{d:'M100 228 L100 252',fill:'none',stroke:'#EA580C','stroke-width':'1.1','stroke-dasharray':'4 3','marker-end':'url(#arr)',opacity:'.8'});
   nfArrow.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(nfArrow);
-  txt(root,'NF-κB',248,285,'7','rgba(234,88,12,.65)','middle');
+  txt(root,'IRF3 / NF-κB',100,264,'7','rgba(234,88,12,.8)','middle');
 
-  // ── IFN-α/β burst (from infected cell) ──
-  // Small cytokine cluster to the right of TLR7
-  const ifnG=e('g'); ifnG.style.animation='pulse 2s ease-in-out infinite'; ifnG.style.transformOrigin='355px 210px';
-  drawCytokine(ifnG,355,210,14); root.appendChild(ifnG);
-  txt(root,'IFN-α/β',355,232,'7','rgba(244,114,182,.7)','middle');
+  // Arrow: NF-κB → IFN-α/β release
+  const ifnArrow=e('path',{d:'M143 260 Q185 256 208 253',fill:'none',stroke:'rgba(244,114,182,.5)','stroke-width':'1','stroke-dasharray':'3 2','marker-end':'url(#arr)',opacity:'.7'});
+  ifnArrow.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(ifnArrow);
 
-  // Dashed signal arrow: TLR7 → IFN
-  const ifnArr=e('path',{d:'M262 215 Q308 213 340 210',fill:'none',stroke:'rgba(251,146,60,.5)','stroke-width':'1','stroke-dasharray':'3 2','marker-end':'url(#arr)',opacity:'.6'});
-  ifnArr.style.animation='dashFlow 2s linear infinite'; root.appendChild(ifnArr);
+  // IFN-α/β cytokine cluster — connected endpoint
+  const ifnG=e('g'); ifnG.style.animation='pulse 2s ease-in-out infinite'; ifnG.style.transformOrigin='228px 248px';
+  drawCytokine(ifnG,228,248,11); root.appendChild(ifnG);
+  txt(root,'IFN-α/β',228,267,'7','rgba(244,114,182,.8)','middle');
 
-  // ── MHC-I upregulation label on blood vessel side ──
+  // ── MHC-I upregulation — blood vessel panel (end-state annotation) ──
   txt(root,'MHC-I ↑',630,70,'7','rgba(107,32,32,.9)','middle');
   txt(root,'on epithelium',630,80,'6.5','rgba(107,32,32,.7)','middle');
 
-  // ── Drop zone hints (subtle, behind game zone circles) ──
-  // These are decorative anchors — actual interactive zones are added by buildScene()
-  // Small label above where macrophage zone will be
-  txt(root,'innate patrol zone',360,132,'7','rgba(217,119,6,.28)','middle');
+  // ── Arrows into drop zone positions ──
+  // IFN-α/β (epithelial layer) → macrophage patrol zone (360,165)
+  const mzArr=e('path',{d:'M234 243 Q297 205 354 172',fill:'none',stroke:'rgba(217,119,6,.38)','stroke-width':'1','stroke-dasharray':'5 3','marker-end':'url(#arr)',opacity:'.6'});
+  mzArr.style.animation='dashFlow 2.2s linear infinite'; root.appendChild(mzArr);
+  // Macrophage zone → NK zone (510,148)
+  const nzArr=e('path',{d:'M370 163 Q440 154 504 150',fill:'none',stroke:'rgba(217,119,6,.3)','stroke-width':'1','stroke-dasharray':'5 3','marker-end':'url(#arr)',opacity:'.5'});
+  nzArr.style.animation='dashFlow 2s linear infinite'; root.appendChild(nzArr);
 }
 
 function buildStage1(root){
@@ -156,9 +158,9 @@ function buildStage1(root){
   // CCL19/CCL21 gradient label
   txt(root,'CCL19 / CCL21 gradient →',246,260,'7','rgba(13,148,136,.65)','middle');
 
-  // Drop zone label hint (where the DC should be dragged)
-  root.appendChild(e('ellipse',{cx:380,cy:150,rx:44,ry:44,fill:'rgba(217,119,6,.04)',stroke:'rgba(217,119,6,.25)','stroke-width':'1.2','stroke-dasharray':'4 3'}));
-  txt(root,'drop zone',380,218,'7','rgba(217,119,6,.35)','middle');
+  // Arrow: lymphatic exit → DC drop zone (380,145)
+  const dzArr=e('path',{d:'M313 148 L374 146',fill:'none',stroke:'rgba(13,148,136,.6)','stroke-width':'1.1','stroke-dasharray':'5 3','marker-end':'url(#arr)',opacity:'.7'});
+  dzArr.style.animation='dashFlow 1.6s linear infinite'; root.appendChild(dzArr);
 }
 
 function buildStage2(root){
@@ -220,6 +222,12 @@ function buildStage2(root){
   // Three signals footer
   root.appendChild(e('rect',{x:60,y:285,width:560,height:13,rx:4,fill:'rgba(217,119,6,.06)'}));
   txt(root,'Signal 1: TCR/MHC  ·  Signal 2: CD28/CD80  ·  Signal 3: IL-12 → full T cell activation',340,294,'7','rgba(217,119,6,.55)','middle');
+
+  // Arrows: DC → T cell drop zones
+  const cd4DzArr=e('path',{d:'M326 150 Q284 151 250 153',fill:'none',stroke:'rgba(67,56,202,.5)','stroke-width':'1','stroke-dasharray':'5 3','marker-end':'url(#arr-p)',opacity:'.65'});
+  cd4DzArr.style.animation='dashFlow 1.6s linear infinite'; root.appendChild(cd4DzArr);
+  const cd8DzArr=e('path',{d:'M354 150 Q396 151 430 153',fill:'none',stroke:'rgba(109,40,217,.5)','stroke-width':'1','stroke-dasharray':'5 3','marker-end':'url(#arr-p)',opacity:'.65'});
+  cd8DzArr.style.animation='dashFlow 1.6s linear infinite'; root.appendChild(cd8DzArr);
 }
 
 function buildStage3(root){
@@ -280,7 +288,7 @@ function buildStage3(root){
   root.appendChild(tfh);
 
   // CD40L:CD40 → dark zone
-  const cd40=e('path',{d:'M322 155 Q270 155 252 155',fill:'none',stroke:'rgba(67,56,202,.7)','stroke-width':'1.2','stroke-dasharray':'4 3','marker-end':'url(#arr-p)',opacity:'.7'});
+  const cd40=e('path',{d:'M322 155 Q270 155 236 155',fill:'none',stroke:'rgba(67,56,202,.7)','stroke-width':'1.2','stroke-dasharray':'4 3','marker-end':'url(#arr-p)',opacity:'.7'});
   cd40.style.animation='dashFlow 1.6s linear infinite'; root.appendChild(cd40);
   txt(root,'CD40L:CD40',283,148,'6.5','rgba(165,180,252,.55)','middle');
 
@@ -356,6 +364,14 @@ function buildStage4(root){
   // ── Contraction label ──
   txt(root,'>90% effector cells → apoptosis',340,268,'7','rgba(217,119,6,.45)','middle');
   txt(root,'survivors differentiate into memory (Tcm·Tem·Trm)',340,279,'6.5','rgba(217,119,6,.35)','middle');
+
+  // Arrows into drop zone positions
+  // CTL area → memory zone (530,155)
+  const memDzArr=e('path',{d:'M258 157 Q394 156 524 155',fill:'none',stroke:'rgba(5,150,105,.42)','stroke-width':'1','stroke-dasharray':'5 3','marker-end':'url(#arr-g)',opacity:'.55'});
+  memDzArr.style.animation='dashFlow 2s linear infinite'; root.appendChild(memDzArr);
+  // Plasma cell (440,180) → antibody zone (370,148)
+  const abDzArr=e('path',{d:'M428 172 Q400 161 378 152',fill:'none',stroke:'rgba(5,150,105,.42)','stroke-width':'1','stroke-dasharray':'5 3','marker-end':'url(#arr-g)',opacity:'.55'});
+  abDzArr.style.animation='dashFlow 1.8s linear infinite'; root.appendChild(abDzArr);
 }
 
 /* STAGES */
